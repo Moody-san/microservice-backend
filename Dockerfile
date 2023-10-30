@@ -1,5 +1,5 @@
-FROM golang:1.18
+FROM alpine:latest
 WORKDIR /app
 COPY ./build /app/
 EXPOSE 8080
-CMD ["/app/build"]
+CMD ["bash","/app/build"]
