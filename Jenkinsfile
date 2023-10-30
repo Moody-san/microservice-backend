@@ -39,7 +39,7 @@ pipeline {
                     sh '''
                         git config user.email "jenkins@gmail.com"
                         git config user.name "jenkins"
-                        sed -i "s|\\(moodysan/goapp/\\).*|\\1${BUILD_NUMBER}|" deployment.yml
+                        sed -i "s|\\(moodysan/goapp:\\).*|\\1${BUILD_NUMBER}|" deployment.yml
                         git add deployment.yml
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                         git push https://${PASSWORD}@github.com/${USERNAME}/${GIT_REPO_NAME}.git HEAD:main
@@ -50,7 +50,7 @@ pipeline {
     }
     post { 
         always {
-            deleteDir() /* clean up our workspace */
+            sudo rm -rf ./*
         }
     }
 }  
