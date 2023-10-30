@@ -8,6 +8,9 @@ pipeline {
   environment {
     DOCKER_IMAGE = "moodysan/goapp:${BUILD_NUMBER}"
     REGISTRY_CREDENTIALS = credentials('docker-cred')
+    GITHUB_TOKEN = credentials('github-token')
+    GIT_USER_NAME = "moody-san"
+    GIT_REPO_NAME = "k8s-manifests"
   }
   stages {
     stage('Checkout Application Repo') {
@@ -31,20 +34,19 @@ pipeline {
     }
     stage('Checkout Manifest Repo') {
         steps {
-            git branch: 'main', url: 'https://github.com/Moody-san/k8s-manifest'
+            git branch: 'main', url: 'https://github.com/Moody-san/k8s-manifests'
         }
     }
     stage('Update Manifest with newly create docker image') {
         steps {
             sh '''
-                cd && cd k8s-manifest/
+                cd && cd k8s-manifests/
                 git config user.email "jenkins@gmail.com"
                 git config user.name "jenkins"
-                BUILD_NUMBER=${BUILD_NUMBER}
-                sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" manifestrepository/deploy.yml
-                git add manifestrepository/deploy.yml
+                sed -i 's|\(moodysan/goapp/\).*|\1${BUILD_NUMBER}|' deployment.yml
+                git add deployment.yml
                 git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
             '''
         }
     }
