@@ -21,7 +21,7 @@ pipeline {
             steps {
                 script {
                     sh 'docker build -t ${DOCKER_IMAGE} .'
-                    withCredentials([usernamePassword(credentialsId: 'docker_cred', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                    withCredentials([usernamePassword(credentialsId: 'docker-cred', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                         sh 'docker login -u ${USERNAME} -p ${PASSWORD}'
                         sh 'docker push ${DOCKER_IMAGE}'
                     }
