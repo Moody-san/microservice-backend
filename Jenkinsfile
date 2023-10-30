@@ -55,8 +55,8 @@ pipeline {
         }
     }
     post { 
-        always { 
-            cleanWs()
+        always {
+            deleteDir() /* clean up our workspace */
         }
     }
 }  
