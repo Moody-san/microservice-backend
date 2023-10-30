@@ -24,7 +24,12 @@ pipeline {
                     sh 'docker build -t ${DOCKER_IMAGE} .'
                     def dockerImage = docker.image("${DOCKER_IMAGE}")
                     docker.withRegistry('https://registry.hub.docker.com',"docker-cred") {
-                        dockerImage.push()
+                        try {
+                            dockerImage.push()
+                        } catch(Exception e) {
+                            echo "Docker push failed: ${e.message}"
+                            throw e
+                        }
                     }
                 }
             }
