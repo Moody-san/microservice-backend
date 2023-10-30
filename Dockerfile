@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM moodysan/gobaseimage:latest
 WORKDIR /app
 COPY ./build /app/
 EXPOSE 80
