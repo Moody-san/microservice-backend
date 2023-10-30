@@ -7,7 +7,6 @@ pipeline {
     }
     environment {
         DOCKER_IMAGE = "moodysan/goapp:${BUILD_NUMBER}"
-        REGISTRY_CREDENTIALS = credentials('docker-cred')
         GIT_REPO_NAME = "k8s-manifests"
     }
     stages {
@@ -21,14 +20,10 @@ pipeline {
         stage('Build docker image and push to dockerHub') {
             steps {
                 script {
-                    sh 'docker build -t ${DOCKER_IMAGE} .'
-                    def dockerImage = docker.image("${DOCKER_IMAGE}")
-                    docker.withRegistry('https://registry.hub.docker.com',"docker-cred") {
-                        try {
-                            dockerImage.push()
-                        } catch(Exception e) {
-                            echo "Docker push failed: ${e.message}"
-                            throw e
+                        sh 'docker build -t ${DOCKER_IMAGE} .'
+                        withCredentials([usernamePassword(credentialsId: 'docker_cred', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                            sh 'docker login -u ${USERNAME} -p ${PASSWORD}'
+                            sh 'docker push ${DOCKER_IMAGE}'
                         }
                     }
                 }
