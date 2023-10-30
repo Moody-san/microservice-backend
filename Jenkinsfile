@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'moodysan/gobaseimage:latest' 
+            image 'golang:1.18' 
             args '--user root -v /var/run/docker.sock:/var/run/docker.sock' 
         }
     }
