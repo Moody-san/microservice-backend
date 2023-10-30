@@ -1,6 +1,6 @@
-FROM alpine:latest
+FROM golang:1.18
 WORKDIR /app
 COPY ./build /app/
 EXPOSE 8080
 Run the Go application.
-CMD ["ls","/app/build","&&","/app/build"]
+CMD ["/app/build"]
