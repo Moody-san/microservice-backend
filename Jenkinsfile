@@ -50,7 +50,7 @@ pipeline {
         stage('delete files from workspace') {
           steps {
             sh 'ls -l'
-            sh 'sudo rm -rf ./*'
+            sh 'rm -rf ./*'
           }
         }
     }
