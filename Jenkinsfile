@@ -47,12 +47,6 @@ pipeline {
                 }
             }
         }
-        stage('delete files from workspace') {
-          steps {
-            sh 'ls -l'
-            sh 'rm -rf ./*'
-          }
-        }
     }
     post { 
         always {
