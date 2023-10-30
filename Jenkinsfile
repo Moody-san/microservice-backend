@@ -18,6 +18,8 @@ pipeline {
         }
         stage('Build go image') {
             steps {
+                sh 'pwd'
+                sh 'ls'
                 sh 'cd microservice-backend/ && go build -o build'
             }
         }
