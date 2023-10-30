@@ -19,11 +19,11 @@ pipeline {
         }
         stage('Build docker image and push to dockerHub') {
             steps {
-                script {
+                script{
                     sh 'docker build -t ${DOCKER_IMAGE} .'
-                    withCredentials([usernamePassword(credentialsId: 'docker-cred', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                        sh 'echo "PASSWORD" | docker login -u ${USERNAME} --password-stdin'
-                        sh 'docker push ${DOCKER_IMAGE}'
+                    def dockerImage = docker.image("${DOCKER_IMAGE}")
+                    docker.withRegistry('https://registry.hub.docker.com',"docker-cred") {
+                        dockerImage.push()
                     }
                 }
             }
