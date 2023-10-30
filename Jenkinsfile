@@ -20,11 +20,10 @@ pipeline {
         stage('Build docker image and push to dockerHub') {
             steps {
                 script {
-                        sh 'docker build -t ${DOCKER_IMAGE} .'
-                        withCredentials([usernamePassword(credentialsId: 'docker_cred', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                            sh 'docker login -u ${USERNAME} -p ${PASSWORD}'
-                            sh 'docker push ${DOCKER_IMAGE}'
-                        }
+                    sh 'docker build -t ${DOCKER_IMAGE} .'
+                    withCredentials([usernamePassword(credentialsId: 'docker_cred', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                        sh 'docker login -u ${USERNAME} -p ${PASSWORD}'
+                        sh 'docker push ${DOCKER_IMAGE}'
                     }
                 }
             }
