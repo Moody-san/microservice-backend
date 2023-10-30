@@ -50,7 +50,7 @@ pipeline {
     }
     post { 
         always {
-            sudo rm -rf ./*
+            sh 'sudo rm -rf ./*'
         }
     }
 }  
