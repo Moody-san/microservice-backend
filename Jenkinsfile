@@ -18,8 +18,7 @@ pipeline {
         }
         stage('Build go image') {
             steps {
-                sh 'pwd'
-                sh 'ls'
+                sh 'go mod init example/app'
                 sh 'go build -o build'
             }
         }
