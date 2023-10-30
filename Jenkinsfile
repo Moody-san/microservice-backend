@@ -11,11 +11,6 @@ pipeline {
         GIT_REPO_NAME = "k8s-manifests"
     }
     stages {
-        stage('Checkout Application Repo') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
-            }
-        }
         stage('Build go image') {
             steps {
                 sh 'if [ -f go.mod ]; then rm -f go.mod; fi'
