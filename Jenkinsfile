@@ -39,7 +39,7 @@ pipeline {
                     sh '''
                         git config user.email "jenkins@gmail.com"
                         git config user.name "jenkins"
-                        sed -i "s|moodysan/goapp|&:${BUILD_NUMBER}|" apps/goapp/deployment.yml
+                        sed -i "s|^moodysan/goapp.*$|moodysan/goapp:${BUILD_NUMBER}|" apps/goapp/deployment.yml
                         git add apps/goapp/deployment.yml
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                         git push https://${PASSWORD}@github.com/${USERNAME}/${GIT_REPO_NAME}.git HEAD:main
