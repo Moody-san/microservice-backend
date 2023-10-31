@@ -10,13 +10,6 @@ pipeline {
         GIT_REPO_NAME = "k8s-manifests"
     }
     stages {
-        stage('Build go image') {
-            steps {
-                sh 'if [ -f go.mod ]; then rm -f go.mod; fi'
-                sh 'go mod init example/app'
-                sh 'go build -o build'
-            }
-        }
         stage('Build docker image and push to dockerHub') {
             steps {
                 script{
