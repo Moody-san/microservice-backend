@@ -1,4 +1,5 @@
 def directoryToImageMap = [:]
+def changeddirs = []
 pipeline {
     agent none
     stages {
@@ -20,7 +21,7 @@ pipeline {
                         }
                     }
                 }
-                stage('Build and Push image to DockerHub'){
+                stage('Check for changed dirs'){
                     steps {
                         script {  
                             def directories = sh(script: 'ls -1 -d */', returnStdout: true).split('\n')
@@ -28,7 +29,20 @@ pipeline {
                                 dir = dir.replaceAll('/$', '')
                                 def nochanges = sh(script: "git status -s ${dir} | grep -q ${dir}",returnStatus: true)
                                 if (!nochanges) {
-                                    checkout scm
+                                    changeddirs.add(dir)
+                                } 
+                                else {
+                                    sh "echo No changes detected in directory: ${dir}"
+                                }
+                            }
+                        }
+                    }
+                }
+                stage ('Checkout changes , build and push image'){
+                    steps{
+                        script{
+                            if (changeddirs.size() > 0){
+                                for (dir in changeddirs){
                                     dir(dir) {
                                         def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
                                         sh "docker build -t ${DOCKER_IMAGE} ."
@@ -38,9 +52,10 @@ pipeline {
                                         }
                                         directoryToImageMap[dir] = image_name
                                     }
-                                } else {
-                                    sh "echo No changes detected in directory: ${dir}"
                                 }
+                            }
+                            else{
+                                sh "echo No changes in any directories"
                             }
                         }
                     }
