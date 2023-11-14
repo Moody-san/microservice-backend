@@ -1,3 +1,4 @@
+def directoryToImageMap = [:]
 pipeline {
     agent none
     stages {
@@ -8,18 +9,26 @@ pipeline {
                     args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
-            environment {
-                DOCKER_IMAGE = "moodysan/goapp:${BUILD_NUMBER}"
-            }
             steps {
-                script{
-                    sh 'docker build -t ${DOCKER_IMAGE} .'
-                    def dockerImage = docker.image("${DOCKER_IMAGE}")
-                    docker.withRegistry('https://registry.hub.docker.com',"docker-cred") {
-                        dockerImage.push()
+                script {  
+                    def directories = sh(script: 'ls -1 -d */', returnStdout: true).trim().split('\n')
+                    for (def dir in directories) {
+                        dir = dir.trim('/')
+                        def nochanges = sh(script: "git status -s ${dir} | grep -q ${dir}",returnStatus: true)
+                        if (!nochanges) {
+                            dir(dir) {
+                                def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
+                                sh "docker build -t ${DOCKER_IMAGE} ."
+                                def dockerImage = docker.image(image_name)
+                                docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
+                                    dockerImage.push()
+                                }
+                                directoryToImageMap[dir] = image_name
+                            }
+                        } else {
+                            sh "echo No changes detected in directory: ${dir}"
+                        }
                     }
-                    sh 'echo inside container'
-                    sh 'ls -la'
                 }
             }
         }
@@ -31,29 +40,24 @@ pipeline {
             stages {
                 stage('Get Manifest Repo'){
                     steps {
-                        sh 'echo outside container'
-                        sh 'ls -la'
                         git branch: 'main', url: 'https://github.com/Moody-san/k8s-manifests'
                     }
                 }
                 stage('Update Manifest with newly create docker image') {
                     steps {
                         withCredentials([usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                            sh '''
-                                git config user.email "jenkins@gmail.com"
-                                git config user.name "jenkins"
-                                sed -i "s|moodysan/goapp.*|moodysan/goapp:${BUILD_NUMBER}|" apps/goapp/deployment.yml
-                                git add apps/goapp/deployment.yml
-                                git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                                git push https://${PASSWORD}@github.com/${USERNAME}/${GIT_REPO_NAME}.git HEAD:main
-                            '''
+                            for (dir in directoryToImageMap){
+                                sh '''
+                                    git config user.email "jenkins@gmail.com"
+                                    git config user.name "jenkins"
+                                    sed -i "s|moodysan/${dir.key}.*|${dir.value}|" ${dir.key}/deployment.yml
+                                    git add ${dir.key}/deployment.yml
+                                    git commit -m "Update ${dir.key} deployment image to version ${BUILD_NUMBER}"
+                                    git push https://${PASSWORD}@github.com/${USERNAME}/${GIT_REPO_NAME}.git HEAD:main
+                                '''
+                            }
                         }
                     }
-                }
-            }
-            post {
-                always {
-                    cleanWs()
                 }
             }
         }
