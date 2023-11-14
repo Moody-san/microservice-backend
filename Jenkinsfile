@@ -27,7 +27,7 @@ pipeline {
                     steps {
                         script {
                             dir("apps"){
-                                git fetch origin main
+                                sh "git fetch origin main"
                                 def directories = sh(script: 'ls -1 -d */', returnStdout: true).split('\n')
                                 for (def dir in directories) {
                                     dir = dir.replaceAll('/$', '')
@@ -48,7 +48,7 @@ pipeline {
                         script{
                             dir("apps"){
                                 if (changeddirs.size() > 0){
-                                    git pull
+                                    sh "git pull"
                                     for (dir in changeddirs){
                                         dir(dir) {
                                             def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
