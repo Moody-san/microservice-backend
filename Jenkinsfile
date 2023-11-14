@@ -13,7 +13,7 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 20 }
+                        expression { currentBuild.number == 1 }
                     }
                     steps {
                         script {
@@ -27,6 +27,7 @@ pipeline {
                     steps {
                         script {
                             dir("apps"){
+                                git fetch origin/main
                                 def directories = sh(script: 'ls -1 -d */', returnStdout: true).split('\n')
                                 for (def dir in directories) {
                                     dir = dir.replaceAll('/$', '')
