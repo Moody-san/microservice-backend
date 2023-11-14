@@ -51,14 +51,14 @@ pipeline {
                                 if (!changeddirs.isEmpty()){
                                     sh "git pull origin main:main"
                                     for (dir in changeddirs){
-                                        dir(dir) {
+                                        dir("${dir}") {
                                             def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
                                             sh "docker build -t ${DOCKER_IMAGE} ."
-                                            def dockerImage = docker.image(image_name)
+                                            def dockerImage = docker.image("${image_name}")
                                             docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
                                                 dockerImage.push()
                                             }
-                                            directoryToImageMap[dir] = image_name
+                                            directoryToImageMap["${dir}"] = "${image_name}"
                                         }
                                     }
                                 }
