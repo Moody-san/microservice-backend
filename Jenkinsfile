@@ -45,8 +45,8 @@ pipeline {
                 }
                 stage('Update Manifest with newly create docker image') {
                     steps {
-                        withCredentials([usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                            for (dir in directoryToImageMap){
+                        for (dir in directoryToImageMap){
+                            withCredentials([usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                                 sh '''
                                     git config user.email "jenkins@gmail.com"
                                     git config user.name "jenkins"
