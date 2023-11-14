@@ -27,7 +27,7 @@ pipeline {
                     steps {
                         script {
                             dir("apps"){
-                                git fetch origin/main
+                                git fetch origin main
                                 def directories = sh(script: 'ls -1 -d */', returnStdout: true).split('\n')
                                 for (def dir in directories) {
                                     dir = dir.replaceAll('/$', '')
