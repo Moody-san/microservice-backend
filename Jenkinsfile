@@ -4,7 +4,8 @@ pipeline {
         stage('Build docker image and push to dockerHub') {
             agent {
                 docker {
-                    image 'moodysan/gobaseimage:latest'  
+                    image 'moodysan/gobaseimage:latest'
+                    args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
             environment {
@@ -17,6 +18,7 @@ pipeline {
                     docker.withRegistry('https://registry.hub.docker.com',"docker-cred") {
                         dockerImage.push()
                     }
+                    sh 'echo inside container'
                     sh 'ls -la'
                 }
             }
@@ -29,6 +31,8 @@ pipeline {
             stages {
                 stage('Get Manifest Repo'){
                     steps {
+                        sh 'echo outside container'
+                        sh 'ls -la'
                         git branch: 'main', url: 'https://github.com/Moody-san/k8s-manifests'
                     }
                 }
