@@ -39,6 +39,7 @@ pipeline {
                                         sh "echo No changes detected in directory: ${dir}"
                                     }
                                 }
+                                sh "echo $changeddirs"
                             }
                         }
                     }
