@@ -49,7 +49,7 @@ pipeline {
                         script{
                             dir("apps"){
                                 if (changeddirs.size() > 0){
-                                    sh "git pull"
+                                    sh "git pull origin main:main"
                                     for (dir in changeddirs){
                                         dir(dir) {
                                             def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
