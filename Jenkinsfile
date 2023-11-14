@@ -17,7 +17,7 @@ pipeline {
                         }
                     }
                 }
-                stage(Build and Push image to DockerHub){
+                stage('Build and Push image to DockerHub'){
                     steps {
                         script {  
                             def directories = sh(script: 'ls -1 -d */', returnStdout: true).split('\n')
