@@ -27,7 +27,7 @@ pipeline {
                             def directories = sh(script: 'ls -1 -d */', returnStdout: true).split('\n')
                             for (def dir in directories) {
                                 dir = dir.replaceAll('/$', '')
-                                def nochanges = sh(script: "git status -s ${dir} | grep -q ${dir}",returnStatus: true)
+                                def nochanges = sh(script: "git diff --name-only main origin/main | grep $dir -q",returnStatus: true)
                                 if (!nochanges) {
                                     changeddirs.add(dir)
                                 } 
