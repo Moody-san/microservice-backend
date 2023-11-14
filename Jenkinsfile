@@ -51,7 +51,7 @@ pipeline {
                                 if (!changeddirs.isEmpty()){
                                     sh "git pull origin main:main"
                                     sh "echo this confirms that pull is working"
-                                    for (dir in changeddirs){
+                                    for (def dir in changeddirs){
                                         dir("${dir}") {
                                             def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
                                             sh "docker build -t ${DOCKER_IMAGE} ."
