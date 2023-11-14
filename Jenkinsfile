@@ -13,7 +13,7 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 21 }
+                        expression { currentBuild.number == 20 }
                     }
                     steps {
                         script {
