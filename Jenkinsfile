@@ -17,22 +17,26 @@ pipeline {
                     }
                     steps {
                         script {
-                            checkout scm
+                            dir("apps"){
+                                checkout scm
+                            }
                         }
                     }
                 }
                 stage('Check for changed dirs'){
                     steps {
-                        script {  
-                            def directories = sh(script: 'ls -1 -d */', returnStdout: true).split('\n')
-                            for (def dir in directories) {
-                                dir = dir.replaceAll('/$', '')
-                                def nochanges = sh(script: "git diff --name-only main origin/main | grep $dir -q",returnStatus: true)
-                                if (!nochanges) {
-                                    changeddirs.add(dir)
-                                } 
-                                else {
-                                    sh "echo No changes detected in directory: ${dir}"
+                        script {
+                            dir("apps"){
+                                def directories = sh(script: 'ls -1 -d */', returnStdout: true).split('\n')
+                                for (def dir in directories) {
+                                    dir = dir.replaceAll('/$', '')
+                                    def nochanges = sh(script: "git diff --name-only main origin/main | grep $dir -q",returnStatus: true)
+                                    if (!nochanges) {
+                                        changeddirs.add(dir)
+                                    } 
+                                    else {
+                                        sh "echo No changes detected in directory: ${dir}"
+                                    }
                                 }
                             }
                         }
@@ -41,21 +45,24 @@ pipeline {
                 stage ('Checkout changes , build and push image'){
                     steps{
                         script{
-                            if (changeddirs.size() > 0){
-                                for (dir in changeddirs){
-                                    dir(dir) {
-                                        def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
-                                        sh "docker build -t ${DOCKER_IMAGE} ."
-                                        def dockerImage = docker.image(image_name)
-                                        docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
-                                            dockerImage.push()
+                            dir("apps"){
+                                if (changeddirs.size() > 0){
+                                    checkout scm
+                                    for (dir in changeddirs){
+                                        dir(dir) {
+                                            def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
+                                            sh "docker build -t ${DOCKER_IMAGE} ."
+                                            def dockerImage = docker.image(image_name)
+                                            docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
+                                                dockerImage.push()
+                                            }
+                                            directoryToImageMap[dir] = image_name
                                         }
-                                        directoryToImageMap[dir] = image_name
                                     }
                                 }
-                            }
-                            else{
-                                sh "echo No changes in any directories"
+                                else{
+                                    sh "echo No changes in any directories"
+                                }
                             }
                         }
                     }
