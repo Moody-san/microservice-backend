@@ -39,7 +39,7 @@ pipeline {
                                         sh "echo No changes detected in directory: ${dir}"
                                     }
                                 }
-                                sh "echo $changeddirs"
+                                sh "echo changes detected in $changeddirs"
                             }
                         }
                     }
@@ -50,16 +50,15 @@ pipeline {
                             dir("apps"){
                                 if (!changeddirs.isEmpty()){
                                     sh "git pull origin main:main"
-                                    sh "echo this confirms that pull is working"
-                                    for (def dir in changeddirs){
-                                        dir("${dir}") {
-                                            def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
+                                    changeddirs.each(){
+                                        dir("${it}") {
+                                            def image_name = "moodysan/${it}:${BUILD_NUMBER}"
                                             sh "docker build -t ${DOCKER_IMAGE} ."
                                             def dockerImage = docker.image("${image_name}")
                                             docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
                                                 dockerImage.push()
                                             }
-                                            directoryToImageMap["${dir}"] = "${image_name}"
+                                            directoryToImageMap["${it}"] = "${image_name}"
                                         }
                                     }
                                 }
