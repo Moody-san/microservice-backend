@@ -11,7 +11,7 @@ pipeline {
             }
             steps {
                 script {  
-                    def directories = sh(script: 'ls -1 -d */', returnStdout: true).trim().split('\n')
+                    def directories = sh(script: 'ls -1 -d */', returnStdout: true).split('\n')
                     for (def dir in directories) {
                         dir = dir.trim('/')
                         def nochanges = sh(script: "git status -s ${dir} | grep -q ${dir}",returnStatus: true)
