@@ -11,6 +11,9 @@ pipeline {
             }
             stages{
                 stage('Checkout Application Repo') {
+                    when {
+                        expression { currentBuild.number == 1 }
+                    }
                     steps {
                         script {
                             checkout scm
@@ -25,6 +28,7 @@ pipeline {
                                 dir = dir.replaceAll('/$', '')
                                 def nochanges = sh(script: "git status -s ${dir} | grep -q ${dir}",returnStatus: true)
                                 if (!nochanges) {
+                                    checkout scm
                                     dir(dir) {
                                         def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
                                         sh "docker build -t ${DOCKER_IMAGE} ."
