@@ -48,7 +48,7 @@ pipeline {
                     steps{
                         script{
                             dir("apps"){
-                                if (changeddirs.size() > 0){
+                                if (changeddirs.length > 0){
                                     sh "git pull origin main:main"
                                     for (dir in changeddirs){
                                         dir(dir) {
