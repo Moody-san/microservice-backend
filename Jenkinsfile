@@ -13,12 +13,12 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 19 }
+                        expression { currentBuild.number == 21 }
                     }
                     steps {
                         script {
                             dir("apps"){
-                                checkout scm
+                                git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
                             }
                         }
                     }
@@ -47,7 +47,7 @@ pipeline {
                         script{
                             dir("apps"){
                                 if (changeddirs.size() > 0){
-                                    checkout scm
+                                    git pull
                                     for (dir in changeddirs){
                                         dir(dir) {
                                             def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
