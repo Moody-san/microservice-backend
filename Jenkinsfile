@@ -93,7 +93,7 @@ pipeline {
                                         sh '''
                                             git config user.email "jenkins@gmail.com"
                                             git config user.name "jenkins"
-                                            sed -i "s|moodysan/${dir.key}.*|${dir.value}|" ${dir.key}/deployment.yml
+                                            sed -i "s|moodysan/${dir.key}.*|${dir.value}|" "${dir.key}"/deployment.yml
                                             git add ${dir.key}/deployment.yml
                                             git commit -m "Update ${dir.key} deployment image to version ${BUILD_NUMBER}"
                                             git push https://${PASSWORD}@github.com/${USERNAME}/${GIT_REPO_NAME}.git HEAD:main
