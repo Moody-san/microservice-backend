@@ -23,7 +23,7 @@ func main() {
 		}
 	})
 
-	log.Println("application 1 : 8080")
+	log.Println("yadada app1: 8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("Error occurred: %v", err)
 	}
