@@ -50,7 +50,7 @@ pipeline {
                             dir("apps"){
                                 if (!changeddirs.isEmpty()){
                                     sh "git pull origin main:main"
-                                    sh "this confirms that pull is working"
+                                    sh "echo this confirms that pull is working"
                                     for (dir in changeddirs){
                                         dir("${dir}") {
                                             def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
