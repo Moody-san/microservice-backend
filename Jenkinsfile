@@ -53,7 +53,7 @@ pipeline {
                                     changeddirs.each(){
                                         dir("${it}") {
                                             def image_name = "moodysan/${it}:${BUILD_NUMBER}"
-                                            sh "docker build -t ${DOCKER_IMAGE} ."
+                                            sh "docker build -t ${image_name} ."
                                             def dockerImage = docker.image("${image_name}")
                                             docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
                                                 dockerImage.push()
