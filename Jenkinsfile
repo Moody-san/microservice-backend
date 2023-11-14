@@ -90,14 +90,14 @@ pipeline {
                             dir("manifests"){
                                 withCredentials([usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                                     for (def key in directoryToImageMap.keySet()){
-                                        sh '''
+                                        sh """
                                             git config user.email "jenkins@gmail.com"
                                             git config user.name "jenkins"
                                             sed -i "s|moodysan/${key}.*|${directoryToImageMap[key]}|" ${key}/deployment.yml
                                             git add "${key}"/deployment.yml
                                             git commit -m "Update ${key} deployment image to version ${BUILD_NUMBER}"
                                             git push https://${PASSWORD}@github.com/${USERNAME}/${GIT_REPO_NAME}.git HEAD:main
-                                        '''
+                                        """
                                     }
                                 }
                             }
