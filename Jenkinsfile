@@ -13,7 +13,7 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 16 }
+                        expression { currentBuild.number == 17 }
                     }
                     steps {
                         script {
@@ -70,7 +70,9 @@ pipeline {
             stages {
                 stage('Get Manifest Repo'){
                     steps {
-                        git branch: 'main', url: 'https://github.com/Moody-san/k8s-manifests',dir: 'manifests'
+                        dir("manifests"){
+                            git branch: 'main', url: 'https://github.com/Moody-san/k8s-manifests'
+                        }
                     }
                 }
                 stage('Update Manifest with newly create docker image') {
