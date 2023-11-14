@@ -2,31 +2,42 @@ def directoryToImageMap = [:]
 pipeline {
     agent none
     stages {
-        stage('Build docker image and push to dockerHub') {
+        stage('Run this inside docker container') {
             agent {
                 docker {
                     image 'moodysan/gobaseimage:latest'
                     args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
-            steps {
-                script {  
-                    def directories = sh(script: 'ls -1 -d */', returnStdout: true).split('\n')
-                    for (def dir in directories) {
-                        dir = dir.replaceAll('/$', '')
-                        def nochanges = sh(script: "git status -s ${dir} | grep -q ${dir}",returnStatus: true)
-                        if (!nochanges) {
-                            dir(dir) {
-                                def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
-                                sh "docker build -t ${DOCKER_IMAGE} ."
-                                def dockerImage = docker.image(image_name)
-                                docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
-                                    dockerImage.push()
+            stages{
+                stage('Checkout Application Repo') {
+                    steps {
+                        script {
+                            checkout scm
+                        }
+                    }
+                }
+                stage(Build and Push image to DockerHub){
+                    steps {
+                        script {  
+                            def directories = sh(script: 'ls -1 -d */', returnStdout: true).split('\n')
+                            for (def dir in directories) {
+                                dir = dir.replaceAll('/$', '')
+                                def nochanges = sh(script: "git status -s ${dir} | grep -q ${dir}",returnStatus: true)
+                                if (!nochanges) {
+                                    dir(dir) {
+                                        def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
+                                        sh "docker build -t ${DOCKER_IMAGE} ."
+                                        def dockerImage = docker.image(image_name)
+                                        docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
+                                            dockerImage.push()
+                                        }
+                                        directoryToImageMap[dir] = image_name
+                                    }
+                                } else {
+                                    sh "echo No changes detected in directory: ${dir}"
                                 }
-                                directoryToImageMap[dir] = image_name
                             }
-                        } else {
-                            sh "echo No changes detected in directory: ${dir}"
                         }
                     }
                 }
@@ -63,5 +74,9 @@ pipeline {
                 }
             }
         }
+    }
+    options {
+        disableConcurrentBuilds()
+        skipDefaultCheckout()
     }
 }  
