@@ -13,7 +13,7 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 2 }
+                        expression { currentBuild.number == 3 }
                     }
                     steps {
                         script {
@@ -31,7 +31,7 @@ pipeline {
                 }
                 stage('Add changed dirs to list'){
                     when {
-                        expression { currentBuild.number != 2 }
+                        expression { currentBuild.number != 3 }
                     }
                     steps {
                         script {
@@ -79,9 +79,7 @@ pipeline {
                 stage ('Remove tmp folders'){
                     steps{
                         script{
-                            sh """
-                                rm -rf $(find . -type d -name '*tmp*')
-                            """
+                            sh "rm -rf \$(find . -type d -name '*tmp*')"
                         }
                     }
                 }
