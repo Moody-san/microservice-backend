@@ -37,7 +37,7 @@ pipeline {
                         script {
                             dir("apps"){
                                 sh "git fetch origin main"
-                                changeddirs = sh(script: "git diff --name-only main origin/main |cut -d/ -f1|uniq",returnStdout: true).split('\n')
+                                changeddirs = sh(script: "git diff --name-only main origin/main |grep /|cut -d/ -f1|uniq",returnStdout: true).split('\n')
                                 for(def dir in changeddirs){
                                     if (!dir.contains('*tmp')){
                                         directories.add(dir)
@@ -77,13 +77,6 @@ pipeline {
                         }
                     }
                 }
-                stage ('Remove tmp folders'){
-                    steps{
-                        script{
-                            sh "rm -rf \$(find . -type d -name '*tmp*')"
-                        }
-                    }
-                }
             }
         }
         stage('Following stages will run outside container') {
@@ -118,6 +111,13 @@ pipeline {
                             catch (Exception e) {
                                 echo 'Exception occurred: ' + e.toString()
                             }
+                        }
+                    }
+                }
+                stage ('Remove tmp folders'){
+                    steps{
+                        script{
+                            sh "rm -rf \$(find . -type d -name '*tmp*')"
                         }
                     }
                 }
