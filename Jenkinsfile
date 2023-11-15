@@ -25,7 +25,7 @@ pipeline {
                 }
                 stage('Add changed dirs to list'){
                     when {
-                        expression { currentBuild.number != 1 }
+                        expression { currentBuild.number != 2 }
                     }
                     steps {
                         script {
