@@ -18,7 +18,7 @@ pipeline {
                         script {
                             dir("apps"){
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
-                                changeddirs = sh(script: "ls -l | awk '/^d/ {print \$9}'|uniq",returnStdout: true).split('\n')
+                                changeddirs = sh(script: "ls -l | awk '/^d/ {print \$9}'",returnStdout: true).split('\n')
                                 sh "echo ${changeddirs}"
                             }
                         }
@@ -42,7 +42,10 @@ pipeline {
                         script{
                             try{
                                 dir("apps"){
-                                    if (changeddirs.length()>0){
+                                    sh "echo ${changeddirs[0]}"
+                                    sh "echo ${changeddirs[1]}"
+                                    sh "echo ${changeddirs.isEmpty()}"
+                                    if (changeddirs.size()>0){
                                         def dir = "${it}".trim()
                                         sh "git pull origin main:main"
                                         changeddirs.each(){
