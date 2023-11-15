@@ -1,5 +1,6 @@
 def changeddirs = []
 def directories = []
+def cleanbuild = "true"
 pipeline {
     agent none
     stages {
@@ -13,7 +14,7 @@ pipeline {
             stages{
                 stage('Clean & Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 1 || "${cleanbuild}"}
+                        expression { currentBuild.number == 1 || "${cleanbuild}"=="true"}
                     }
                     steps {
                         script {
