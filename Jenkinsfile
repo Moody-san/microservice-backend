@@ -53,7 +53,7 @@ pipeline {
                             try{
                                 dir("apps"){
                                     if (directories.size()>0){
-                                        sh "echo ${directories}"
+                                        sh "echo ${directories.size()}"
                                         sh "git pull origin main:main"
                                         directories.each(){
                                             dir("${it}") {
