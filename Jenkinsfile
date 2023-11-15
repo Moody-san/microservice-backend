@@ -12,7 +12,7 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 9 }
+                        expression { currentBuild.number == 10 }
                     }
                     steps {
                         script {
@@ -26,7 +26,7 @@ pipeline {
                 }
                 stage('Add changed dirs to list'){
                     when {
-                        expression { currentBuild.number != 9 }
+                        expression { currentBuild.number != 10 }
                     }
                     steps {
                         script {
@@ -42,7 +42,7 @@ pipeline {
                         script{
                             try{
                                 dir("apps"){
-                                    if (changeddirs.size()>0){
+                                    if (changeddirs.length()>0){
                                         def dir = "${it}".trim()
                                         sh "git pull origin main:main"
                                         changeddirs.each(){
