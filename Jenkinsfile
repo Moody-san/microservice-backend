@@ -12,7 +12,7 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 2 }
+                        expression { currentBuild.number == 3 }
                     }
                     steps {
                         script {
@@ -25,7 +25,7 @@ pipeline {
                 }
                 stage('Add changed dirs to list'){
                     when {
-                        expression { currentBuild.number != 2 }
+                        expression { currentBuild.number != 3 }
                     }
                     steps {
                         script {
@@ -59,8 +59,8 @@ pipeline {
                                     }
                                 }
                             }
-                            catch (all){
-                                sh "Unable to build docker image(s)"
+                            catch(all){
+                                sh "Unable to build docker images"
                             }
                         }
                     }
