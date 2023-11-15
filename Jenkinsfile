@@ -18,7 +18,7 @@ pipeline {
                         script {
                             dir("apps"){
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
-                                changeddirs = sh(script: "ls -l | awk '/^d/ {print \$9}'|uniq").split('\n')
+                                changeddirs = sh(script: "ls -l | awk '/^d/ {print \$9}'|uniq",returnStdout: true).split('\n')
                             }
                         }
                     }
@@ -31,7 +31,7 @@ pipeline {
                         script {
                             dir("apps"){
                                 sh "git fetch origin main"
-                                changeddirs = sh(script: "git diff --name-only main origin/main |cut -d/ -f1|uniq").split('\n')
+                                changeddirs = sh(script: "git diff --name-only main origin/main |cut -d/ -f1|uniq",returnStdout: true).split('\n')
                             }
                         }
                     }
