@@ -19,9 +19,9 @@ pipeline {
                         script {
                             dir("apps"){
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
-                                changeddirs = sh(script: "ls -1 -l | awk '/^d/ {print \$9}'",returnStdout: true).trim().split('\n')
+                                changeddirs = sh(script: "ls -1 -l | awk '/^d/ {print \$9}'",returnStdout: true).split('\n')
                                 for(def dir in changeddirs){
-                                    if (!dir.contains('*tmp')){
+                                    if (!dir.contains('*tmp') || dir==null || dir.allWhitespace){
                                         directories.add(dir)
                                     }
                                 }
@@ -37,9 +37,9 @@ pipeline {
                         script {
                             dir("apps"){
                                 sh "git fetch origin main"
-                                changeddirs = sh(script: "git diff --name-only main origin/main | grep '/' | cut -d/ -f1 | uniq",returnStdout: true).trim().split('\n')
+                                changeddirs = sh(script: "git diff --name-only main origin/main | grep '/' | cut -d/ -f1 | uniq",returnStdout: true).split('\n')
                                 for(def dir in changeddirs){
-                                    if (!dir.contains('*tmp')){
+                                    if (!dir.contains('*tmp') || dir==null || dir.allWhitespace){
                                         directories.add(dir)
                                     }
                                 }
