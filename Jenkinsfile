@@ -37,7 +37,7 @@ pipeline {
                         script {
                             dir("apps"){
                                 sh "git fetch origin main"
-                                changeddirs = sh(script: "git diff --name-only main origin/main |grep /|cut -d/ -f1|uniq",returnStdout: true).split('\n')
+                                changeddirs = sh(script: "git diff --name-only main origin/main | grep '/' | cut -d/ -f1 | uniq",returnStdout: true).split('\n')
                                 for(def dir in changeddirs){
                                     if (!dir.contains('*tmp')){
                                         directories.add(dir)
