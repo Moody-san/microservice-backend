@@ -1,4 +1,5 @@
 def changeddirs = []
+def directories = []
 pipeline {
     agent none
     stages {
@@ -12,26 +13,32 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 20 }
+                        expression { currentBuild.number == 21 }
                     }
                     steps {
                         script {
                             dir("apps"){
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
                                 changeddirs = sh(script: "ls -1 -l | awk '/^d/ {print \$9}'",returnStdout: true).split('\n')
+                                for(def dir in changeddirs){
+                                    directories.add("$dir".trim())
+                                }
                             }
                         }
                     }
                 }
                 stage('Add changed dirs to list'){
                     when {
-                        expression { currentBuild.number != 20 }
+                        expression { currentBuild.number != 21 }
                     }
                     steps {
                         script {
                             dir("apps"){
                                 sh "git fetch origin main"
                                 changeddirs = sh(script: "git diff --name-only main origin/main |cut -d/ -f1|uniq",returnStdout: true).split('\n')
+                                for(def dir in changeddirs){
+                                    directories.add("$dir".trim())
+                                }
                             }
                         }
                     }
@@ -41,12 +48,11 @@ pipeline {
                         script{
                             try{
                                 dir("apps"){
-                                    if (!changeddirs.isEmpty()){
-                                        def dir = "${it}".trim()
+                                    if (!directories.isEmpty()){
                                         sh "git pull origin main:main"
-                                        changeddirs.each(){
-                                            dir("${dir}") {
-                                                def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
+                                        directories.each(){
+                                            dir("${it}") {
+                                                def image_name = "moodysan/${it}:${BUILD_NUMBER}"
                                                 sh "docker build -t ${image_name} ."
                                                 def dockerImage = docker.image("${image_name}")
                                                 docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
@@ -84,14 +90,13 @@ pipeline {
                             try{
                                 dir("manifests"){
                                     withCredentials([usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                                        changeddirs.each(){
-                                            def dir = "${it}".trim()
+                                        directories.each(){
                                             sh """
                                                 git config user.email "jenkins@gmail.com"
                                                 git config user.name "jenkins"
-                                                sed -i "s|moodysan/${dir}.*|moodysan/${dir}:${BUILD_NUMBER}|" services/${dir}/deployment.yml
-                                                git add services/${dir}/deployment.yml
-                                                git commit -m "Update ${dir} deployment image to version ${BUILD_NUMBER}"
+                                                sed -i "s|moodysan/${it}.*|moodysan/${dir}:${BUILD_NUMBER}|" services/${it}/deployment.yml
+                                                git add services/${it}/deployment.yml
+                                                git commit -m "Update ${it} deployment image to version ${BUILD_NUMBER}"
                                                 git push https://${PASSWORD}@github.com/${USERNAME}/k8s-manifests.git HEAD:main
                                             """
                                         }
