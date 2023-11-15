@@ -12,26 +12,26 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 18 }
+                        expression { currentBuild.number == 19 }
                     }
                     steps {
                         script {
                             dir("apps"){
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
-                                changeddirs = changeddirs + sh(script: "ls -l | awk '/^d/ {print \$9}'",returnStdout: true).trim().split('\n')
+                                changeddirs = sh(script: "ls -l | awk '/^d/ {print \$9}'",returnStdout: true).trim().split('\n').toString().split(",")
                             }
                         }
                     }
                 }
                 stage('Add changed dirs to list'){
                     when {
-                        expression { currentBuild.number != 18 }
+                        expression { currentBuild.number != 19 }
                     }
                     steps {
                         script {
                             dir("apps"){
                                 sh "git fetch origin main"
-                                changeddirs = changeddirs + sh(script: "git diff --name-only main origin/main |cut -d/ -f1|uniq",returnStdout: true).trim().split('\n')
+                                changeddirs = sh(script: "git diff --name-only main origin/main |cut -d/ -f1|uniq",returnStdout: true).trim().split('\n').toString().split(",")
                             }
                         }
                     }
