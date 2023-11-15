@@ -127,11 +127,16 @@ pipeline {
                 stage ('Remove tmp folders'){
                     steps{
                         script{
-                            sh "echo remove tmp files generated recursively in and outside workspace"
+                            sh "echo remove tmp files generated recursively in workspace"
                             sh "rm -rf \$(find . -type d -name '*tmp*')"
-                            sh "rm -rf \$(find .. -type d -name '*tmp*')"
                         }
                     }
+                }
+            }
+            post{
+                always{
+                    sh "echo remove tmp files generated recursively outside workspace"
+                    sh "ls"
                 }
             }
         }
