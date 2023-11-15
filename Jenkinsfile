@@ -18,7 +18,7 @@ pipeline {
                         script {
                             dir("apps"){
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
-                                changeddirs = sh(script: "ls -l | awk '/^d/ {print $9}'|uniq").split('\n')
+                                changeddirs = sh(script: "ls -l | awk '/^d/ {print \$9}'|uniq").split('\n')
                             }
                         }
                     }
