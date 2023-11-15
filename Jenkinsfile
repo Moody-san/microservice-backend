@@ -1,6 +1,6 @@
 def changeddirs = []
 def directories = []
-def cleanbuild = "true"
+def cleanbuild = "false"
 pipeline {
     agent none
     stages {
