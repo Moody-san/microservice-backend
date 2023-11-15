@@ -19,7 +19,7 @@ pipeline {
                     steps {
                         script {
                             dir("apps"){
-                                sh "clean workspace"
+                                sh "echo clean workspace"
                                 sh "rm -rf ./*"
                                 sh "echo cloning application repository"
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
