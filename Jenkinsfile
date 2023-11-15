@@ -60,7 +60,7 @@ pipeline {
                                 }
                             }
                             catch(all){
-                                sh "Unable to build docker images"
+                                sh "echo Unable to build docker images"
                             }
                         }
                     }
