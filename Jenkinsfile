@@ -53,6 +53,7 @@ pipeline {
                             try{
                                 dir("apps"){
                                     if (!directories.isEmpty()){
+                                        sh "echo ${directories}"
                                         sh "git pull origin main:main"
                                         directories.each(){
                                             dir("${it}") {
