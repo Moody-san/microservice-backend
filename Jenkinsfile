@@ -42,7 +42,7 @@ pipeline {
                         script{
                             try{
                                 dir("apps"){
-                                    if (!changeddirs.isEmpty()){
+                                    if (changeddirs.size()>0){
                                         def dir = "${it}".trim()
                                         sh "git pull origin main:main"
                                         changeddirs.each(){
