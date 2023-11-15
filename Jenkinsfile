@@ -87,8 +87,8 @@ pipeline {
                                             sh """
                                                 git config user.email "jenkins@gmail.com"
                                                 git config user.name "jenkins"
-                                                sed -i "s|moodysan/${it}.*|moodysan/${it}:${BUILD_NUMBER}|" ${it}/deployment.yml
-                                                git add ${it}/deployment.yml
+                                                sed -i "s|moodysan/${it}.*|moodysan/${it}:${BUILD_NUMBER}|" services/${it}/deployment.yml
+                                                git add $services/{it}/deployment.yml
                                                 git commit -m "Update ${it} deployment image to version ${BUILD_NUMBER}"
                                                 git push https://${PASSWORD}@github.com/${USERNAME}/k8s-manifests.git HEAD:main
                                             """
