@@ -12,7 +12,7 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 4 }
+                        expression { currentBuild.number == 5 }
                     }
                     steps {
                         script {
@@ -25,7 +25,7 @@ pipeline {
                 }
                 stage('Add changed dirs to list'){
                     when {
-                        expression { currentBuild.number != 4 }
+                        expression { currentBuild.number != 5 }
                     }
                     steps {
                         script {
@@ -59,8 +59,8 @@ pipeline {
                                     }
                                 }
                             }
-                            catch(all){
-                                sh "echo Unable to build docker images"
+                            catch (Exception e) {
+                                echo 'Exception occurred: ' + e.toString()
                             }
                         }
                     }
@@ -96,8 +96,8 @@ pipeline {
                                     }
                                 }
                             }
-                            catch (all){
-                                sh "Unable to update manifests"
+                            catch (Exception e) {
+                                echo 'Exception occurred: ' + e.toString()
                             }
                         }
                     }
