@@ -13,11 +13,13 @@ pipeline {
             stages{
                 stage('Clean & Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 7}
+                        expression { currentBuild.number == 1 || "${cleanbuild}"}
                     }
                     steps {
                         script {
                             dir("apps"){
+                                sh "clean workspace"
+                                sh "rm -rf ./*"
                                 sh "echo cloning application repository"
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
                                 sh "echo adding all directories to built"
@@ -33,7 +35,7 @@ pipeline {
                 }
                 stage('Add changed dirs to list'){
                     when {
-                        expression { currentBuild.number != 7 }
+                        expression { currentBuild.number != 1 }
                     }
                     steps {
                         script {
