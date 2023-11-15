@@ -23,7 +23,7 @@ func main() {
 		}
 	})
 
-	log.Println("hello from app2 : 8080")
+	log.Println("hello from app3 : 8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("Error occurred: %v", err)
 	}
