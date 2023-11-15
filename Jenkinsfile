@@ -129,7 +129,6 @@ pipeline {
                         script{
                             sh "echo remove tmp files generated recursively in & outside workspace"
                             sh "rm -rf \$(find . -type d -name '*tmp*')"
-                            sh "rm -rf \$(find .. -type d -name '*tmp*')"
                         }
                     }
                 }
