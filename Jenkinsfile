@@ -52,7 +52,7 @@ pipeline {
                         script{
                             try{
                                 dir("apps"){
-                                    if (directories != []){
+                                    if (directories.size()>0){
                                         sh "echo ${directories}"
                                         sh "git pull origin main:main"
                                         directories.each(){
