@@ -1,6 +1,5 @@
 def changeddirs = []
 def directories = []
-def cleanbuild = true
 pipeline {
     agent none
     stages {
@@ -14,10 +13,9 @@ pipeline {
             stages{
                 stage('Clean & Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 1 || "$cleanbuild"}
+                        expression { currentBuild.number == 1}
                     }
                     steps {
-                        cleanWs()
                         script {
                             dir("apps"){
                                 sh "echo cloning application repository"
@@ -126,8 +124,9 @@ pipeline {
                 stage ('Remove tmp folders'){
                     steps{
                         script{
-                            sh "echo remove tmp files generated recursively in workspace"
+                            sh "echo remove tmp files generated recursively in & outside workspace"
                             sh "rm -rf \$(find . -type d -name '*tmp*')"
+                            sh "rm -rf \$(find .. -type d -name '*tmp*')"
                         }
                     }
                 }
