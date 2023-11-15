@@ -62,7 +62,7 @@ pipeline {
                                     if (directories.size()>0){
                                         sh "echo update local app repo with changes from remote origin"
                                         sh "git pull origin main:main"
-                                        sh "echo building dockerfile for directories -> ${directories}"
+                                        sh "echo building dockerfile for directories ${directories}"
                                         directories.each(){
                                             dir("${it}") {
                                                 def image_name = "moodysan/${it}:${BUILD_NUMBER}"
