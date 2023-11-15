@@ -13,7 +13,7 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 22 }
+                        expression { currentBuild.number == 23 }
                     }
                     steps {
                         script {
@@ -21,7 +21,7 @@ pipeline {
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
                                 changeddirs = sh(script: "ls -1 -l | awk '/^d/ {print \$9}'",returnStdout: true).split('\n')
                                 for(def dir in changeddirs){
-                                    directories.add("$dir".trim())
+                                    directories.add(dir)
                                 }
                             }
                         }
@@ -29,7 +29,7 @@ pipeline {
                 }
                 stage('Add changed dirs to list'){
                     when {
-                        expression { currentBuild.number != 22 }
+                        expression { currentBuild.number != 23 }
                     }
                     steps {
                         script {
@@ -37,7 +37,7 @@ pipeline {
                                 sh "git fetch origin main"
                                 changeddirs = sh(script: "git diff --name-only main origin/main |cut -d/ -f1|uniq",returnStdout: true).split('\n')
                                 for(def dir in changeddirs){
-                                    directories.add("$dir".trim())
+                                    directories.add(dir)
                                 }
                             }
                         }
@@ -94,7 +94,7 @@ pipeline {
                                             sh """
                                                 git config user.email "jenkins@gmail.com"
                                                 git config user.name "jenkins"
-                                                sed -i "s|moodysan/${it}.*|moodysan/${dir}:${BUILD_NUMBER}|" services/${it}/deployment.yml
+                                                sed -i "s|moodysan/${it}.*|moodysan/${it}:${BUILD_NUMBER}|" services/${it}/deployment.yml
                                                 git add services/${it}/deployment.yml
                                                 git commit -m "Update ${it} deployment image to version ${BUILD_NUMBER}"
                                                 git push https://${PASSWORD}@github.com/${USERNAME}/k8s-manifests.git HEAD:main
