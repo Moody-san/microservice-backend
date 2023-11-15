@@ -18,7 +18,9 @@ pipeline {
                     steps {
                         script {
                             dir("apps"){
+                                sh "echo cloning application repository"
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
+                                sh "echo adding all directories to built"
                                 changeddirs = sh(script: "ls -1 -l | awk '/^d/ {print \$9}'",returnStdout: true).split('\n')
                                 for(def dir in changeddirs){
                                     if (!dir.contains('*tmp') && dir!=''){
@@ -36,7 +38,9 @@ pipeline {
                     steps {
                         script {
                             dir("apps"){
+                                sh "echo update remote origin for application repo"
                                 sh "git fetch origin main"
+                                sh "echo adding directories that changed to list"
                                 changeddirs = sh(script: "git diff --name-only main origin/main | grep '/' | cut -d/ -f1 | uniq",returnStdout: true).split('\n')
                                 for(def dir in changeddirs){
                                     if (!dir.contains('*tmp') && dir!=''){
@@ -53,8 +57,9 @@ pipeline {
                             try{
                                 dir("apps"){
                                     if (directories.size()>0){
-                                        sh "echo ${directories.size()}"
+                                        sh "echo update local app repo with changes from remote origin"
                                         sh "git pull origin main:main"
+                                        sh "echo building dockerfile for directories -> ${directories}"
                                         directories.each(){
                                             dir("${it}") {
                                                 def image_name = "moodysan/${it}:${BUILD_NUMBER}"
@@ -85,6 +90,7 @@ pipeline {
                 stage('Get Manifest Repo'){
                     steps {
                         dir("manifests"){
+                            sh "echo clone manifests repo"
                             git branch: 'main', url: 'https://github.com/Moody-san/k8s-manifests'
                         }
                     }
@@ -94,6 +100,7 @@ pipeline {
                         script {
                             try{
                                 dir("manifests"){
+                                    sh "echo update deployment files in manifest repo"
                                     withCredentials([usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                                         directories.each(){
                                             sh """
@@ -117,6 +124,7 @@ pipeline {
                 stage ('Remove tmp folders'){
                     steps{
                         script{
+                            sh "echo remove tmp files generated recursively in workspace"
                             sh "rm -rf \$(find . -type d -name '*tmp*')"
                         }
                     }
