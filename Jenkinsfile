@@ -12,26 +12,28 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 12 }
+                        expression { currentBuild.number == 13 }
                     }
                     steps {
                         script {
                             dir("apps"){
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
-                                changeddirs = sh(script: "ls -l | awk '/^d/ {print \$9}'",returnStdout: true).split('\n')
+                                def changeddirsOutput = sh(script: "ls -l | awk '/^d/ {print \$9}'",returnStdout: true)
+                                changeddirs=changeddirsOutput.split('\n')
                             }
                         }
                     }
                 }
                 stage('Add changed dirs to list'){
                     when {
-                        expression { currentBuild.number != 12 }
+                        expression { currentBuild.number != 13 }
                     }
                     steps {
                         script {
                             dir("apps"){
                                 sh "git fetch origin main"
-                                changeddirs = sh(script: "git diff --name-only main origin/main |cut -d/ -f1|uniq",returnStdout: true).split('\n')
+                                def changeddirsOutput = sh(script: "git diff --name-only main origin/main |cut -d/ -f1|uniq",returnStdout: true)
+                                changeddirs=changeddirsOutput.split('\n')
                             }
                         }
                     }
@@ -41,8 +43,7 @@ pipeline {
                         script{
                             try{
                                 dir("apps"){
-                                    sh "echo ${changeddirs.size()}"
-                                    if (changeddirs.size()>0){
+                                    if (changeddirs.isEmpty()){
                                         def dir = "${it}".trim()
                                         sh "git pull origin main:main"
                                         changeddirs.each(){
