@@ -18,9 +18,9 @@ pipeline {
                     }
                     steps {
                         script {
+                            sh "echo clean workspace"
+                            sh "rm -rf ./*"
                             dir("apps"){
-                                sh "echo clean workspace"
-                                sh "rm -rf ./*"
                                 sh "echo cloning application repository"
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
                                 sh "echo adding all directories to built"
