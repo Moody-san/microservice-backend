@@ -12,7 +12,7 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 7 }
+                        expression { currentBuild.number == 8 }
                     }
                     steps {
                         script {
@@ -26,7 +26,7 @@ pipeline {
                 }
                 stage('Add changed dirs to list'){
                     when {
-                        expression { currentBuild.number != 7 }
+                        expression { currentBuild.number != 8 }
                     }
                     steps {
                         script {
