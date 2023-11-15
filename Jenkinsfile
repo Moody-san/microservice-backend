@@ -1,5 +1,6 @@
 def changeddirs = []
 def directories = []
+def cleanbuild = true
 pipeline {
     agent none
     stages {
@@ -11,11 +12,12 @@ pipeline {
                 }
             }
             stages{
-                stage('Checkout Application Repo') {
+                stage('Clean & Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 1 }
+                        expression { currentBuild.number == 1 || "$cleanbuild"}
                     }
                     steps {
+                        cleanWs()
                         script {
                             dir("apps"){
                                 sh "echo cloning application repository"
