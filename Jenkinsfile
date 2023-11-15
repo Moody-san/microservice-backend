@@ -136,7 +136,7 @@ pipeline {
             post{
                 always{
                     sh "echo remove tmp files generated recursively outside workspace"
-                    sh "ls"
+                    sh "rm -rf \$(find .. -type d -name '*tmp*')"
                 }
             }
         }
