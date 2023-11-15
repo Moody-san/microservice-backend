@@ -12,20 +12,21 @@ pipeline {
             stages{
                 stage('Checkout Application Repo') {
                     when {
-                        expression { currentBuild.number == 5 }
+                        expression { currentBuild.number == 6 }
                     }
                     steps {
                         script {
                             dir("apps"){
                                 git branch: 'main', url: 'https://github.com/Moody-san/microservice-backend'
                                 changeddirs = sh(script: "ls -l | awk '/^d/ {print \$9}'|uniq",returnStdout: true).split('\n')
+                                sh 'echo changeddirs'
                             }
                         }
                     }
                 }
                 stage('Add changed dirs to list'){
                     when {
-                        expression { currentBuild.number != 5 }
+                        expression { currentBuild.number != 6 }
                     }
                     steps {
                         script {
