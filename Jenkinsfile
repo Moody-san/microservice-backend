@@ -1,4 +1,4 @@
-def dir = "app1"
+def dir = "app2"
 def deployments = [
     [branch: 'oracle', dirName: 'manifests-oracle'],
     [branch: 'azure', dirName: 'manifests-azure'],
@@ -46,7 +46,8 @@ pipeline {
                         dir("${deployment.dirName}"){
                             sh "echo update deployment files in manifests repo"
                             withCredentials([usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                                directories.each(){
+                                def direxists = sh(script: "ls -1 ./manifests/ | grep ${dir}", returnStdout: true).trim()
+                                if (!direxists.isEmpty()){
                                     sh """
                                         git config user.email "jenkins@mail.com"
                                         git config user.name "jenkins"
