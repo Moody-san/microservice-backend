@@ -64,6 +64,11 @@ pipeline {
             }
         }
     }
+    post {
+        always {
+            cleanWs()
+        }
+    }
     options {
         disableConcurrentBuilds()
         skipDefaultCheckout()
