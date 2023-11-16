@@ -13,7 +13,7 @@ type Response struct {
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		res := Response{
-			Message: "Running2",
+			Message: "Hello from app1",
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -23,7 +23,6 @@ func main() {
 		}
 	})
 
-	log.Println("Hello from app1")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("Error occurred: %v", err)
 	}
