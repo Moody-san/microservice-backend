@@ -1,6 +1,10 @@
 def changeddirs = []
 def directories = []
 def buildall = "false"
+def deployments = [
+    [branch: 'oracle', dirName: 'manifests-oracle'],
+    [branch: 'azure', dirName: 'manifests-azure'],
+]
 pipeline {
     agent {
         docker {
@@ -86,29 +90,27 @@ pipeline {
                 }
             }
         }
-        stage('Checkout Manifest Repo'){
-            steps {
-                dir("manifests"){
-                    sh "echo clone manifests repo"
-                    git branch: 'main', url: 'https://github.com/Moody-san/k8s-manifests'
-                }
-            }
-        }
-        stage('Update Manifest with newly create docker image') {
+        stage('Checkout and Update Manifest Repo with newly create docker image') {
             steps {
                 script {
-                    dir("manifests"){
-                        sh "echo update deployment files in manifests repo"
-                        withCredentials([usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                            directories.each(){
-                                sh """
-                                    git config user.email "jenkins@gmail.com"
-                                    git config user.name "jenkins"
-                                    sed -i "s|moodysan/${it}.*|moodysan/${it}:${BUILD_NUMBER}|" manifests/${it}/deployment.yml
-                                    git add manifests/${it}/deployment.yml
-                                    git commit -m "Update ${it} deployment image to version ${BUILD_NUMBER}"
-                                    git push https://${PASSWORD}@github.com/${USERNAME}/k8s-manifests.git HEAD:main
-                                """
+                    deployments.each{ deployment ->
+                        dir("${deployment.dirName}"){
+                            sh "echo clone manifests repo"
+                            git branch: '${deployment.branch}', url: 'https://github.com/Moody-san/k8s-manifests'
+                        }
+                        dir("${deployment.dirName}"){
+                            sh "echo update deployment files in manifests repo"
+                            withCredentials([usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                                directories.each(){
+                                    sh """
+                                        git config user.email "jenkins@gmail.com"
+                                        git config user.name "jenkins"
+                                        sed -i "s|moodysan/${it}.*|moodysan/${it}:${BUILD_NUMBER}|" manifests/${it}/deployment.yml
+                                        git add manifests/${it}/deployment.yml
+                                        git commit -m "Update ${it} deployment image to version ${BUILD_NUMBER}"
+                                        git push https://${PASSWORD}@github.com/${USERNAME}/k8s-manifests.git HEAD:main
+                                    """
+                                }
                             }
                         }
                     }
@@ -120,7 +122,6 @@ pipeline {
                 script{
                     sh "echo remove tmp and manifest files generated recursively in workspace"
                     sh "rm -rf \$(find . -type d -name '*tmp*')"
-                    sh "rm -rf manifests*"
                 }
             }
         }
