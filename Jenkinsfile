@@ -103,14 +103,14 @@ pipeline {
                         script {
                             try{
                                 dir("manifests"){
-                                    sh "echo update deployment files in manifest repo"
+                                    sh "echo update deployment files in manifests repo"
                                     withCredentials([usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                                         directories.each(){
                                             sh """
                                                 git config user.email "jenkins@gmail.com"
                                                 git config user.name "jenkins"
-                                                sed -i "s|moodysan/${it}.*|moodysan/${it}:${BUILD_NUMBER}|" services/${it}/deployment.yml
-                                                git add services/${it}/deployment.yml
+                                                sed -i "s|moodysan/${it}.*|moodysan/${it}:${BUILD_NUMBER}|" manifests/${it}/deployment.yml
+                                                git add manifests/${it}/deployment.yml
                                                 git commit -m "Update ${it} deployment image to version ${BUILD_NUMBER}"
                                                 git push https://${PASSWORD}@github.com/${USERNAME}/k8s-manifests.git HEAD:main
                                             """
