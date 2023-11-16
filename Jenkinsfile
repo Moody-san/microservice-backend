@@ -1,4 +1,4 @@
-def dir = "app2"
+def dir = "app3"
 def deployments = [
     [branch: 'oracle', dirName: 'manifests-oracle'],
     [branch: 'azure', dirName: 'manifests-azure'],
@@ -62,6 +62,11 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+    post {
+        always {
+            cleanWs()
         }
     }
     options {
