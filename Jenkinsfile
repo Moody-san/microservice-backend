@@ -23,12 +23,14 @@ pipeline {
             steps{
                 script{
                     try{
-                        sh "echo building image"
-                        def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
-                        sh "docker build -t ${image_name} ."
-                        def dockerImage = docker.image("${image_name}")
-                        docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
-                            dockerImage.push()
+                        dir('build'){
+                            sh "echo building image"
+                            def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
+                            sh "docker build -t ${image_name} ."
+                            def dockerImage = docker.image("${image_name}")
+                            docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
+                                dockerImage.push()
+                            }
                         }
                     }
                     catch (Exception e){
