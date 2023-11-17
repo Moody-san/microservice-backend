@@ -66,7 +66,6 @@ pipeline {
         }
     }
     options {
-        throttleJobProperty(categories: ['oneatatime'],throttleEnabled: true,throttleOption: 'category')
         skipDefaultCheckout()
     }
 }  
