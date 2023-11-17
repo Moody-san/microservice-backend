@@ -23,7 +23,7 @@ pipeline {
             steps{
                 script{
                     try{
-                        dir('app1'){
+                        dir('dockerbuild'){
                             sh "echo building image"
                             def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
                             sh "docker build -t ${image_name} ."
