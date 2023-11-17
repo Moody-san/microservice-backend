@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os" // Import the os package
 )
 
 type Response struct {
@@ -12,8 +13,14 @@ type Response struct {
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// Get the hostname from the environment variables
+		hostname, err := os.Hostname()
+		if err != nil {
+			log.Fatalf("Error getting hostname: %v", err)
+		}
+
 		res := Response{
-			Message: "Hello this is application 3 from Oracle CLoud K8s cluster from pod -> echo $hostname",
+			Message: "Hello, this is application 3 from Oracle Cloud K8s cluster from pod -> " + hostname,
 		}
 
 		w.Header().Set("Content-Type", "application/json")
