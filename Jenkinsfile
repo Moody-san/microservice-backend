@@ -25,7 +25,7 @@ pipeline {
                     dir("build"){
                         sh "echo building image"
                         def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
-                        docker build -t ${image_name} .
+                        sh "docker build -t ${image_name} ."
                         def dockerImage = docker.image("${image_name}")
                         docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
                             dockerImage.push()
