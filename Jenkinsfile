@@ -34,7 +34,7 @@ pipeline {
                         }
                     }
                     catch (Exception e){
-                        sh "echo error eq  ${e.getMessage()}"
+                        echo 'Exception occurred: ' + e.toString()
                     }
                 }
             }
