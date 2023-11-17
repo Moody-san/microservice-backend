@@ -64,7 +64,7 @@ pipeline {
         }
     }
     options {
-        disableConcurrentBuilds()
+        throttle(concurrentBuilds: true, category: 'oneatatime')
         skipDefaultCheckout()
     }
 }  
