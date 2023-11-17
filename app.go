@@ -13,7 +13,7 @@ type Response struct {
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		res := Response{
-			Message: "Hello from application2",
+			Message: "Hello from application 2",
 		}
 
 		w.Header().Set("Content-Type", "application/json")
