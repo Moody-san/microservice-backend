@@ -1,7 +1,7 @@
 def dir = "app2"
 def deployments = [
-    [branch: 'oracle', dirName: 'manifests-oracle'],
-    [branch: 'azure', dirName: 'manifests-azure'],
+    [branch: 'oracle', dirName: 'manifests-oracle', arch: 'linux/arm64'],
+    [branch: 'azure', dirName: 'manifests-azure', arch: 'linux/amd64']
 ]
 pipeline {
     agent {
@@ -21,20 +21,24 @@ pipeline {
         }
         stage ('Build Docker Images'){
             steps{
-                script{
-                    sh "echo building image"
-                    def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
-                    sh "docker build -t ${image_name} ."
-                    def dockerImage = docker.image("${image_name}")
-                    docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
-                        dockerImage.push()
+                lock("buildlock"){
+                    script{
+                        deployments.each{ deployment ->
+                            sh "echo building image"
+                            def image_name = "moodysan/${dir}:${deployment.arch}-${BUILD_NUMBER}"
+                            sh "docker build --platform ${deployment.arch} -t ${image_name} ."
+                            def dockerImage = docker.image("${image_name}")
+                            docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
+                                dockerImage.push()
+                            }
+                        }
                     }
                 }
             }
         }
         stage('Checkout and Update Manifest Repo') {
             steps {
-                lock("mylock"){
+                lock("deploymentlock"){
                     script {
                         deployments.each{ deployment ->
                             sh "echo updating deployment files for ${deployment.dirName} cluster"
@@ -47,9 +51,9 @@ pipeline {
                                     sh """
                                         git config user.email "jenkins@mail.com"
                                         git config user.name "jenkins"
-                                        sed -i "s|moodysan/${dir}.*|moodysan/${dir}:${BUILD_NUMBER}|" manifests/${dir}/deployment.yml
+                                        sed -i "s|moodysan/${dir}.*|moodysan/${dir}:${deployment.arch}-${BUILD_NUMBER}|" manifests/${dir}/deployment.yml
                                         git add manifests/${dir}/deployment.yml
-                                        git commit -m "Update ${dir} deployment image to version ${BUILD_NUMBER}"
+                                        git commit -m "Update ${dir} deployment image to version ${BUILD_NUMBER} in branch ${deployment.branch}"
                                         git push https://${PASSWORD}@github.com/${USERNAME}/k8s-manifests.git HEAD:"${deployment.branch}"
                                     """
                                 }
@@ -68,4 +72,4 @@ pipeline {
     options {
         skipDefaultCheckout()
     }
-}  
+}
