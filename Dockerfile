@@ -1,4 +1,4 @@
-FROM golang:1.21.4
+FROM --platform=$TARGETPLATFORM golang:1.21.4
 WORKDIR /app
 COPY go.* ./
 RUN go mod download
