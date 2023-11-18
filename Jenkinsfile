@@ -1,7 +1,7 @@
 def dir = "app1"
 def deployments = [
     [branch: 'oracle', dirName: 'manifests-oracle', arch: 'linux/arm64'],
-    [branch: 'azure', dirName: 'manifests-azure', arch:'linux/amd64']
+    [branch: 'azure', dirName: 'manifests-azure', arch: 'linux/amd64']
 ]
 pipeline {
     agent {
