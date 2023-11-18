@@ -1,7 +1,7 @@
 def dir = "app1"
 def deployments = [
-    [branch: 'oracle', dirName: 'manifests-oracle', arch: 'linux/arm64',imagetype:'arm'],
-    [branch: 'azure', dirName: 'manifests-azure', arch: 'linux/amd64',imagetype:'amd']
+    [branch: 'oracle', dirName: 'manifests-oracle'],
+    [branch: 'azure', dirName: 'manifests-azure']
 ]
 pipeline {
     agent {
@@ -23,14 +23,12 @@ pipeline {
             steps{
                 lock("buildlock"){
                     script{
-                        deployments.each{ deployment ->
-                            sh "echo building image"
-                            def image_name = "moodysan/${dir}:${deployment.imagetype}-${BUILD_NUMBER}"
-                            sh "docker build --platform ${deployment.arch} -t ${image_name} ."
-                            def dockerImage = docker.image("${image_name}")
-                            docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
-                                dockerImage.push()
-                            }
+                        sh "echo building image"
+                        def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
+                        sh "docker buildx build --platform linux/arm64 linux/amd64 -t ${image_name} ."
+                        def dockerImage = docker.image("${image_name}")
+                        docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
+                            dockerImage.push()
                         }
                     }
                 }
@@ -51,7 +49,7 @@ pipeline {
                                     sh """
                                         git config user.email "jenkins@mail.com"
                                         git config user.name "jenkins"
-                                        sed -i "s|moodysan/${dir}.*|moodysan/${dir}:${deployment.imagetype}-${BUILD_NUMBER}|" manifests/${dir}/deployment.yml
+                                        sed -i "s|moodysan/${dir}.*|moodysan/${dir}:${BUILD_NUMBER}|" manifests/${dir}/deployment.yml
                                         git add manifests/${dir}/deployment.yml
                                         git commit -m "Update ${dir} deployment image to version ${BUILD_NUMBER} in branch ${deployment.branch}"
                                         git push https://${PASSWORD}@github.com/${USERNAME}/k8s-manifests.git HEAD:"${deployment.branch}"
