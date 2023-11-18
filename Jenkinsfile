@@ -4,17 +4,16 @@ def deployments = [
     [branch: 'azure', dirName: 'manifests-azure']
 ]
 pipeline {
-    agent {
-        docker {
-            image 'moodysan/gobaseimage:latest'
-            args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
-        }
+    agent any
+    environment {
+        DOCKER_ID = 'moodysan'
+        DOCKER_PASSWORD = credentials('docker-password')
     }
     stages {
         stage('Checkout Application Repo') {
             steps {
                 script {
-                   sh "echo clone from branch ${dir} repository"
+                   sh "echo clone from branch ${dir} repository...."
                    git branch: "${dir}", url: 'https://github.com/Moody-san/microservice-backend'
                 }
             }
@@ -23,7 +22,9 @@ pipeline {
             steps{
                 lock("buildlock"){
                     script{
-                        sh "echo building image"
+                        sh 'echo login to docker....'
+                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_ID --password-stdin'
+                        sh "echo building image...."
                         def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
                         sh 'docker buildx create --name mymultibuilder --use --platform linux/arm64,linux/amd64'
                         sh "docker buildx build --builder mymultibuilder -t ${image_name} ."
