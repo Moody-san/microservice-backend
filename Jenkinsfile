@@ -25,7 +25,7 @@ pipeline {
                     script{
                         deployments.each{ deployment ->
                             sh "echo building image"
-                            def image_name = "moodysan/${dir}:${deployment.arch}-${BUILD_NUMBER}"
+                            def image_name = "moodysan/${dir}:${deployment.arch}/${BUILD_NUMBER}"
                             sh "docker build --platform ${deployment.arch} -t ${image_name} ."
                             def dockerImage = docker.image("${image_name}")
                             docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
@@ -51,7 +51,7 @@ pipeline {
                                     sh """
                                         git config user.email "jenkins@mail.com"
                                         git config user.name "jenkins"
-                                        sed -i "s|moodysan/${dir}.*|moodysan/${dir}:${deployment.arch}-${BUILD_NUMBER}|" manifests/${dir}/deployment.yml
+                                        sed -i "s|moodysan/${dir}.*|moodysan/${dir}:${deployment.arch}/${BUILD_NUMBER}|" manifests/${dir}/deployment.yml
                                         git add manifests/${dir}/deployment.yml
                                         git commit -m "Update ${dir} deployment image to version ${BUILD_NUMBER} in branch ${deployment.branch}"
                                         git push https://${PASSWORD}@github.com/${USERNAME}/k8s-manifests.git HEAD:"${deployment.branch}"
