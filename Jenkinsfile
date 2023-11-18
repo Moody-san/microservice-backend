@@ -25,7 +25,8 @@ pipeline {
                     script{
                         sh "echo building image"
                         def image_name = "moodysan/${dir}:${BUILD_NUMBER}"
-                        sh "docker buildx build --builder mybuilder2 -t ${image_name} ."
+                        sh 'docker buildx create --name mymultibuilder --use --platform linux/arm64,linux/amd64'
+                        sh "docker buildx build --builder mymultibuilder -t ${image_name} ."
                         def dockerImage = docker.image("${image_name}")
                         docker.withRegistry('https://registry.hub.docker.com','docker-cred') {
                             dockerImage.push()
