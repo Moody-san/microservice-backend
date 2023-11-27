@@ -23,7 +23,7 @@ pipeline {
                 lock('buildlock'){
                     script{
                         echo 'login to docker....'
-                        echo "$DOCKER_PASSWORD | docker login -u $DOCKER_ID --password-stdin"
+                        sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_ID --password-stdin"
                         echo 'building image....'
                         sh "docker buildx build --push --platform linux/amd64,linux/arm64 -t ${DOCKER_ID}/${dir}:${BUILD_NUMBER} ."
                     }
