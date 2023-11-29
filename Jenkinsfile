@@ -62,5 +62,6 @@ pipeline {
     }
     options {
         skipDefaultCheckout()
+        disableConcurrentBuilds()
     }
 }  
