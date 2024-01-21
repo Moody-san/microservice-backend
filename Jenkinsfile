@@ -24,7 +24,8 @@ pipeline {
                     echo 'login to docker....'
                     sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_ID --password-stdin"
                     echo 'building image....'
-                    sh "docker buildx build --push --platform linux/amd64,linux/arm64 -t ${DOCKER_ID}/${dir}:${BUILD_NUMBER} ."
+                    sh "docker build -t ${DOCKER_ID}/${dir}:${BUILD_NUMBER} ."
+                    sh "docker push ${DOCKER_ID}/${dir}:${BUILD_NUMBER}"
                 }
             }
         }
