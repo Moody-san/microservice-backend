@@ -44,9 +44,8 @@ pipeline {
                                         git config user.email "jenkins@mail.com"
                                         git config user.name "jenkins"
                                         sed -i "s|server: .*|server: ${deployment.lbip}|" appofapps/${dir}.yml
-                                        git add appofapps/${dir}.yml
                                         sed -i "s|$DOCKER_ID/${dir}.*|${DOCKER_ID}/${dir}:${BUILD_NUMBER}|" manifests/${dir}/deployment.yml
-                                        git add manifests/${dir}/deployment.yml
+                                        git add .
                                         git commit -m "Build number ${BUILD_NUMBER} deployed"
                                         git push https://${PASSWORD}@github.com/${USERNAME}/k8s-manifests.git HEAD:"${deployment.branch}"
                                     """
