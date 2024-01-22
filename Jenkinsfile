@@ -1,6 +1,6 @@
 def dir = "app3"
 def deployments = [
-    [branch: 'oracle', dirName: 'manifests-oracle', lbip: 'https://10.0.1.118:6443'],
+    [branch: 'oracle', dirName: 'manifests-oracle', lbip: 'https://10.0.1.226:6443'],
     [branch: 'azure', dirName: 'manifests-azure', lbip: 'https://192.0.1.8:6443']
 ]
 pipeline {
