@@ -104,13 +104,10 @@ func (s *UserService) Authenticate(email, password string) (*model.User, error) 
 			// User not found
 			return nil, errors.New("incorrect email or password")
 		}
-		// Database error
 		return nil, err
 	}
 
-	// Check if the provided password matches the stored hash
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		// Password does not match
 		return nil, errors.New("incorrect email or password")
 	}
 
