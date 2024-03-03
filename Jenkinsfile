@@ -39,8 +39,10 @@ pipeline {
                             echo "updating deployment file for ${deployment.dirName} cluster...."
                             def lbtype = "${deployment.branch}" == 'oracle' ? 'oracle-lbip' : 'azure-lbip'
                             withCredentials(
-                                [string(credentialsId: "${lbtype}", variable: 'lbip')],
-                                [usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')],
+                                [
+                                    string(credentialsId: "${lbtype}", variable: 'lbip'),
+                                    usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')
+                                ],
                             ) {
                                 def direxists = sh(script: "ls -1 ./manifests/ | grep ${dir}", returnStdout: true).trim()
                                 if (!direxists.isEmpty()){
