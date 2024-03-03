@@ -1,0 +1,88 @@
+# Compiled Go binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+!bin/.gitkeep
+!bin/README.md
+
+# Go build directories
+obj/
+test/
+
+# Go coverage files
+*.cover
+
+# Go modules
+/vendor/
+Gopkg.lock
+go.sum
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+*.db
+
+# OS generated files
+.DS_Store*
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker related files that should not be git-tracked
+docker-compose.override.yml
+*.env
+!example.env
+.env.*
+!*.example
+.dockerignore
+
+# Docker volumes directory
+volumes/
+
+# Node modules (if you're using any frontend tools)
+node_modules/
+
+# IDE specific files
+.idea/
+*.swp
+*.swo
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Certificates
+*.pem
+*.key
+*.cert
+
+# Test output
+/test_results/
+coverage.out
+
+# Dependency directories (commented out if you prefer to check these in)
+# vendor/
+
+# Private keys and configuration files that contain sensitive information
+*.conf
+*.yaml
+!example*.yaml
+!example*.conf
+
+# Ignore local development scripts
+scripts/local/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Ignore generated files from code generation
+/generated/
+
