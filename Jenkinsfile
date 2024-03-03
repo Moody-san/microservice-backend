@@ -37,8 +37,7 @@ pipeline {
                             echo 'clone manifests repo....'
                             git branch: "${deployment.branch}", url: 'https://github.com/Moody-san/k8s-manifests'
                             echo "updating deployment file for ${deployment.dirName} cluster...."
-                            def lbtype = deployment.branch == 'oracle' ? 'oracle-lbip' : 'azure-lbip'
-                            with
+                            def lbtype = "deployment.branch}" == 'oracle' ? 'oracle-lbip' : 'azure-lbip'
                             withCredentials(
                                 [string(credentialsId: "${lbtype}", variable: 'lbip')],
                                 [usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')],
