@@ -96,6 +96,7 @@ func DeleteUserHandler(s *service.UserService) http.HandlerFunc {
 		}
 	}
 }
+
 func ListUsersHandler(s *service.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := s.ListUsers()

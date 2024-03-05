@@ -17,8 +17,7 @@ func main() {
 	dbPassword := "user_password"
 	dbName := "userservicedb"
 
-	// Connect to the database
-	db, err := gorm.Open(mysql.Open(fmt.Sprintf("%s:%s@tcp(localhost:3306)/%s?parseTime=true", dbUser, dbPassword, dbName)), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(fmt.Sprintf("%s:%s@tcp(host.docker.internal:3306)/%s?parseTime=true", dbUser, dbPassword, dbName)), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Can't connect to the database")
 	}
