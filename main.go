@@ -5,21 +5,31 @@ import (
 	"github.com/AjaxAueleke/e-commerce/userService/api"
 	"github.com/AjaxAueleke/e-commerce/userService/internal/service"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/swaggo/http-swagger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
-	dbUser := "newuser"
-	dbPassword := "user_password"
-	dbName := "userservicedb"
-
-	db, err := gorm.Open(mysql.Open(fmt.Sprintf("%s:%s@tcp(host.docker.internal:3306)/%s?parseTime=true", dbUser, dbPassword, dbName)), &gorm.Config{})
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Can't connect to the database")
+		log.Fatal("Error loading .env file", err)
+	}
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
+
+	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Can't connect to the database", err))
 	}
 	userService := service.NewUserService(db)
 
