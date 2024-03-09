@@ -38,6 +38,8 @@ pipeline {
                             echo 'clone manifests repo....'
                             git branch: "${deployment.branch}", url: 'https://github.com/Moody-san/k8s-manifests'
                             echo "updating deployment file for ${deployment.dirName} cluster...."
+                            def currentBranch = sh(script: "git branch --show-current", returnStdout: true).trim()
+                            echo "Current Git branch: ${currentBranch}"
                             def lbtype = "${deployment.branch}" == 'oracle' ? 'oracle-lbip' : 'azure-lbip'
                             withCredentials(
                                 [
@@ -45,6 +47,8 @@ pipeline {
                                     usernamePassword(credentialsId: 'GITHUB_TOKEN', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')
                                 ],
                             ) {
+                                def fileList = sh(script: "ls -1", returnStdout: true).trim()
+                                echo "Files in the current directory: \n${fileList}"
                                 def direxists = sh(script: "ls -1 ./manifests/ | grep ${dir}", returnStdout: true).trim()
                                 if (!direxists.isEmpty()){
                                     sh """
@@ -73,4 +77,4 @@ pipeline {
         skipDefaultCheckout()
         disableConcurrentBuilds()
     }
-}  
+}
