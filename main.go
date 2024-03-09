@@ -24,9 +24,10 @@ func main() {
 	dbName := os.Getenv("DB_NAME")
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
+	log.Printf("dbUser: %v", dbUser)
+	log.Printf("dbName: %v", dbName)
 
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
-
 	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Can't connect to the database", err))
@@ -46,8 +47,9 @@ func main() {
 	http.Handle("/", r)
 	log.Println("Server started on :9000")
 	err = http.ListenAndServe(":9000", nil)
+
 	if err != nil {
-		log.Println("Error creating the server")
+		log.Fatal("Error creating the server")
 		return
 	}
 }
