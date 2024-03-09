@@ -23,7 +23,7 @@ func main() {
 	log.Printf("dbUser: %v", dbUser)
 	log.Printf("dbName: %v", dbName)
 	log.Printf("dbPassword: %v", dbPassword)
-	log.Printf("dbHost: %v", dbPassword)
+	log.Printf("dbHost: %v", dbHost)
 	log.Printf("dbPort: %v", dbPort)
 
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
