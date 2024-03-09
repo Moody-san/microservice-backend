@@ -14,6 +14,7 @@ import (
 )
 
 func main() {
+
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
@@ -21,6 +22,9 @@ func main() {
 	dbPort := os.Getenv("DB_PORT")
 	log.Printf("dbUser: %v", dbUser)
 	log.Printf("dbName: %v", dbName)
+	log.Printf("dbPassword: %v", dbPassword)
+	log.Printf("dbHost: %v", dbPassword)
+	log.Printf("dbPort: %v", dbPort)
 
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
 	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
