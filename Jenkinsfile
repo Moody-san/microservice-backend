@@ -2,7 +2,7 @@
 def dir = "user-service"
 def deployments = [
     [branch: 'oracle', dirName: 'manifests-oracle'],
-    [branch: 'azure', dirName: 'manifests-azure']
+//     [branch: 'azure', dirName: 'manifests-azure']
 ]
 pipeline {
     agent any
