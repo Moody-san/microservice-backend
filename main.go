@@ -5,7 +5,6 @@ import (
 	"github.com/AjaxAueleke/e-commerce/userService/api"
 	"github.com/AjaxAueleke/e-commerce/userService/internal/service"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	"github.com/swaggo/http-swagger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -15,7 +14,7 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
+	//err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file", err)
 	}
