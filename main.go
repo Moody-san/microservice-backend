@@ -11,10 +11,28 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
-func main() {
+func LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Log the required details
+		start := time.Now()
+		log.Printf("Started %s %s from %s", r.Method, r.RequestURI, r.RemoteAddr)
 
+		next.ServeHTTP(w, r)
+
+		// You can also log the response status and the time taken to serve the request
+		log.Printf("Completed in %v", time.Since(start))
+	})
+}
+func main() {
+	//
+	//err := godotenv.Load()
+	//if err != nil {
+	//	return
+	//}
+	//
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
@@ -43,7 +61,7 @@ func main() {
 
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
-	http.Handle("/", r)
+	http.Handle("/", LoggingMiddleware(r))
 	log.Println("Server started on :9000")
 	err = http.ListenAndServe(":9000", nil)
 
