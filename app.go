@@ -20,7 +20,7 @@ func main() {
 		}
 
 		res := Response{
-			Message: "app 1 from pod -> " + hostname,
+			Message: "application 1 from pod -> " + hostname,
 		}
 
 		w.Header().Set("Content-Type", "application/json")
