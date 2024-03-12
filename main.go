@@ -5,6 +5,7 @@ import (
 	"github.com/AjaxAueleke/e-commerce/userService/api"
 	"github.com/AjaxAueleke/e-commerce/userService/internal/service"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/swaggo/http-swagger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -27,12 +28,12 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 func main() {
-	//
-	//err := godotenv.Load()
-	//if err != nil {
-	//	return
-	//}
-	//
+	err := godotenv.Load()
+	if err != nil {
+		return
+	}
+
+	rabbitmqConnectionString := os.Getenv("RABBITMQ_URL")
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
@@ -49,7 +50,13 @@ func main() {
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Can't connect to the database", err))
 	}
-	userService := service.NewUserService(db)
+
+	rabbitMQSvc := service.NewRabbitMQService(rabbitmqConnectionString)
+	err = rabbitMQSvc.SetupQueueAndBind("user.deleted", "userDeleteQueue")
+	if err != nil {
+		log.Fatalf("Failed to setup queue and bind it: %v", err)
+	}
+	userService := service.NewUserService(db, rabbitMQSvc)
 
 	r := mux.NewRouter()
 
@@ -62,7 +69,9 @@ func main() {
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	http.Handle("/", LoggingMiddleware(r))
+
 	log.Println("Server started on :9000")
+
 	err = http.ListenAndServe(":9000", nil)
 
 	if err != nil {

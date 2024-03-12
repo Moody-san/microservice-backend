@@ -7,19 +7,24 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"log"
 	"time"
 )
 
 type UserService struct {
-	db *gorm.DB
+	db          *gorm.DB
+	rabbitMQSvc *RabbitMQService
 }
 
-func NewUserService(db *gorm.DB) *UserService {
+func NewUserService(db *gorm.DB, rabbitMQSvc *RabbitMQService) *UserService {
 	err := db.AutoMigrate(&model.User{})
 	if err != nil {
 		panic("failed to auto migrate")
 	}
-	return &UserService{db: db}
+	return &UserService{
+		db:          db,
+		rabbitMQSvc: rabbitMQSvc,
+	}
 }
 
 func (s *UserService) CreateUser(user *model.User) error {
@@ -60,7 +65,19 @@ func (s *UserService) UpdateUser(user *model.User) error {
 
 func (s *UserService) DeleteUser(userID uint) error {
 	result := s.db.Delete(&model.User{}, userID)
-	return result.Error
+	if result.Error != nil {
+		return result.Error
+	}
+	eventType := "user.deleted"
+	payload := []byte(fmt.Sprintf(`{"userID": %d, "message": "User deleted successfully."}`, userID))
+	exchange := "user.deleted"
+	routingKey := ""
+
+	err := s.rabbitMQSvc.PublishEvent(exchange, routingKey, eventType, payload)
+	if err != nil {
+		log.Printf("Failed to publish user deletion event: %v", err)
+	}
+	return nil
 }
 
 func (s *UserService) GetUserByEmail(email string) (*model.User, error) {
