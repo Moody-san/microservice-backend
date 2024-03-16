@@ -19,14 +19,20 @@ import (
 
 func main() {
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Can't read environment variables")
-	}
-
-	dsn := "newuser:user_password@tcp(localhost:3306)/productservicedb?charset=utf8mb4&parseTime=True&loc=Local"
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	log.Printf("dbUser: %v", dbUser)
+	log.Printf("dbName: %v", dbName)
+	log.Printf("dbPassword: %v", dbPassword)
+	log.Printf("dbHost: %v", dbHost)
+	log.Printf("dbPort: %v", dbPort)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
+	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
