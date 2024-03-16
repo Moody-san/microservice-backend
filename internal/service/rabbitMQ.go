@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -22,91 +23,101 @@ func NewRabbitMQService(connStr string) *RabbitMQService {
 	}
 }
 
+func handleUserDeletedEvent(d amqp.Delivery, productService *ProductService) {
+	type EventStruct struct {
+		Message string `json:"message"`
+		UserID  uint   `json:"userID"`
+	}
+	var event EventStruct
+	err := json.Unmarshal(d.Body, &event)
+	if err != nil {
+		log.Printf("Error unmarshalling event: %v", err)
+		return
+	}
+	userID := event.UserID
+
+	log.Printf("%v", event)
+	err = productService.DeleteProductsByUserID(userID)
+	if err != nil {
+		log.Printf("Error deleting products for user %d: %v", userID, err)
+	} else {
+		log.Printf("Deleted products for user %d", userID)
+	}
+
+	// Acknowledge the message so it's not redelivered
+	if err := d.Ack(false); err != nil {
+		log.Printf("Error acknowledging message: %v", err)
+	}
+}
+
 func (r *RabbitMQService) PublishEvent(exchange, routingKey, eventType string, payload []byte) error {
-	// Open a channel
 	ch, err := r.conn.Channel()
 	if err != nil {
-		return fmt.Errorf("failed to open a channel: %w", err)
+		return fmt.Errorf("Failed to open a channel: %w", err)
 	}
-	defer ch.Close() // Ensure the channel is closed after the function execution
+	defer ch.Close()
 
-	err = ch.ExchangeDeclare(
-		exchange, // Use the dynamic exchange name
-		"fanout", // Usually, fanout is used for broadcasting. If you need direct or topic, change accordingly.
-		true,     // durable
-		false,    // auto-deleted
-		false,    // internal
-		false,    // no-wait
-		nil,      // arguments
-	)
-	if err != nil {
-		return fmt.Errorf("failed to declare an exchange: %w", err)
-	}
-
-	// Publish the message
 	err = ch.Publish(
-		exchange,   // Use the dynamic exchange name
-		routingKey, // Use the provided routing key. For fanout exchange, this can be ignored.
+		exchange,   // exchange
+		routingKey, // routing key
 		false,      // mandatory
 		false,      // immediate
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        payload,
 			Headers:     amqp.Table{"eventType": eventType},
-		},
-	)
+		})
 	if err != nil {
-		return fmt.Errorf("failed to publish a message: %w", err)
+		return fmt.Errorf("Failed to publish a message: %w", err)
 	}
 
 	return nil
 }
 
-func (r *RabbitMQService) SetupQueueAndBind(exchangeName, queueName string) error {
+func (r *RabbitMQService) ConsumeEvents(queueName, consumerTag string, handleMsg func(amqp.Delivery)) {
 	ch, err := r.conn.Channel()
 	if err != nil {
-		return fmt.Errorf("failed to open a channel: %w", err)
+		log.Fatalf("Failed to open a channel: %v", err)
 	}
-	defer ch.Close()
+	defer func() {
+		err := ch.Close()
+		if err != nil {
+			log.Fatalf("Failed to close channel: %v", err)
+		}
+	}()
 
-	// Declare the fanout exchange
-	err = ch.ExchangeDeclare(
-		exchangeName,
-		"fanout",
-		true,
-		false,
-		false,
-		false,
-		nil,
+	msgs, err := ch.Consume(
+		queueName,   // queue
+		consumerTag, // consumer
+		false,       // auto-ack
+		false,       // exclusive
+		false,       // no-local
+		false,       // no-wait
+		nil,         // args
 	)
 	if err != nil {
-		return fmt.Errorf("failed to declare an exchange: %w", err)
+		log.Fatalf("Failed to register a consumer: %v", err)
 	}
 
-	// Declare the queue
-	q, err := ch.QueueDeclare(
-		queueName,
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to declare a queue: %w", err)
+	forever := make(chan bool)
+
+	go func() {
+		for d := range msgs {
+			handleMsg(d) // Process each message
+		}
+	}()
+
+	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	<-forever
+}
+
+func (r *RabbitMQService) StartListeningForUserDeleteEvents(productService *ProductService) {
+	queueName := "userDeleteQueue" // Ensure this matches the queue where user delete events are published
+	consumerTag := "productServiceConsumer"
+
+	handleMsgWrapper := func(d amqp.Delivery) {
+		handleUserDeletedEvent(d, productService)
 	}
 
-	// Bind the queue to the exchange
-	err = ch.QueueBind(
-		q.Name,
-		"", // Ignored by fanout exchanges
-		exchangeName,
-		false,
-		nil,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to bind the queue: %w", err)
-	}
-
-	return nil
+	r.ConsumeEvents(queueName, consumerTag, handleMsgWrapper)
 }

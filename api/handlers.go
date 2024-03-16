@@ -2,179 +2,191 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/AjaxAueleke/e-commerce/productService/internal/model"
+	"github.com/AjaxAueleke/e-commerce/productService/internal/service"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 	"strconv"
-	"strings"
-
-	"github.com/AjaxAueleke/e-commerce/userService/internal/model"
-	"github.com/AjaxAueleke/e-commerce/userService/internal/service"
 )
 
-func CreateUserHandler(s *service.UserService) http.HandlerFunc {
+func RegisterProductRoutes(r *mux.Router, s *service.ProductService) {
+	r.HandleFunc("/products", createProductHandler(s)).Methods("POST")
+	r.HandleFunc("/products/{id}", getProductHandler(s)).Methods("GET")
+	r.HandleFunc("/products/{id}", updateProductHandler(s)).Methods("PUT")
+	r.HandleFunc("/products/{id}", deleteProductHandler(s)).Methods("DELETE")
+	r.HandleFunc("/products", listProductsHandler(s)).Methods("GET")
+	r.HandleFunc("/users/{userID}/products", getProductsByUserIDHandler(s)).Methods("GET") // New route
+
+}
+func createProductHandler(s *service.ProductService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var user model.User
-		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-			log.Printf("Error decoding user data: %v", err)
-			http.Error(w, "Invalid user data", http.StatusBadRequest)
-			return
-		}
-		validRoles := map[string]bool{
-			"Vendor":   true,
-			"Customer": true,
-			"Admin":    true,
-		}
-		if _, isValidRole := validRoles[user.Role]; !isValidRole {
-			log.Printf("Invalid role provided: %v", user.Role)
-			http.Error(w, "Invalid role provided. Valid roles are: Vendor, Customer, Admin", http.StatusBadRequest)
+		var product model.Product
+		if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
 
-		if err := s.CreateUser(&user); err != nil {
-			log.Printf("Error creating user: %v", err)
-			http.Error(w, "Error creating user", http.StatusInternalServerError)
+		if err := s.CreateProduct(&product); err != nil {
+			http.Error(w, "Failed to create product", http.StatusInternalServerError)
 			return
 		}
 
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(map[string]string{"message": "User created successfully"})
+		json.NewEncoder(w).Encode(product)
 	}
 }
-
-func UpdateUserHandler(s *service.UserService) http.HandlerFunc {
+func getProductHandler(s *service.ProductService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		userID, ok := vars["id"]
-		if !ok {
-			log.Println("User ID is missing in URL path")
-			http.Error(w, "User ID is required", http.StatusBadRequest)
+		id, err := strconv.Atoi(vars["id"])
+		if err != nil {
+			http.Error(w, "Invalid product ID", http.StatusBadRequest)
 			return
 		}
 
-		var user model.User
-		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-			log.Printf("Error decoding user data: %v", err)
-			http.Error(w, "Invalid user data", http.StatusBadRequest)
-			return
-		}
-		userID_int, err_userId := strconv.Atoi(userID)
-		if err_userId != nil {
-			log.Printf("Error converting userid: %v", err_userId)
-			http.Error(w, "Invalid user id", http.StatusBadRequest)
-		}
-		user.ID = uint(userID_int) // Assuming ID is a string. Convert or adapt as necessary
-
-		if err := s.UpdateUser(&user); err != nil {
-			log.Printf("Error updating user: %v", err)
-			http.Error(w, "Error updating user", http.StatusInternalServerError)
+		product, err := s.GetProduct(uint(id))
+		if err != nil {
+			http.Error(w, "Product not found", http.StatusNotFound)
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"message": "User updated successfully"})
+		json.NewEncoder(w).Encode(product)
 	}
 }
-
-func DeleteUserHandler(s *service.UserService) http.HandlerFunc {
+func updateProductHandler(s *service.ProductService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		userID, ok := vars["id"]
-		if !ok {
-			log.Println("User ID is missing in URL path")
-			http.Error(w, "User ID is required", http.StatusBadRequest)
-			return
-		}
-		userID_int, err := strconv.Atoi(userID)
-		if !ok {
-			log.Println("User ID is not a valid integer")
-			http.Error(w, "User ID should be an integer", http.StatusBadRequest)
-			return
-		}
-
-		if err := s.DeleteUser(uint(userID_int)); err != nil {
-			log.Printf("Error deleting user: %v", err)
-			http.Error(w, "Error deleting user", http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		err = json.NewEncoder(w).Encode(map[string]string{"message": "User deleted successfully"})
+		id, err := strconv.Atoi(vars["id"])
 		if err != nil {
+			http.Error(w, "Invalid product ID", http.StatusBadRequest)
 			return
 		}
+
+		var product model.Product
+		if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		product.ID = uint(id) // Ensure the product ID is set to the one from the URL.
+		if err := s.UpdateProduct(&product); err != nil {
+			http.Error(w, "Failed to update product", http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode(product)
 	}
 }
-
-func ListUsersHandler(s *service.UserService) http.HandlerFunc {
+func deleteProductHandler(s *service.ProductService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		users, err := s.ListUsers()
+		vars := mux.Vars(r)
+		id, err := strconv.Atoi(vars["id"])
 		if err != nil {
-			log.Printf("Error fetching users: %v", err)
-			http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
+			http.Error(w, "Invalid product ID", http.StatusBadRequest)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(users); err != nil {
-			log.Printf("Error encoding users response: %v", err)
-			http.Error(w, "Error processing users data", http.StatusInternalServerError)
+		if err := s.DeleteProduct(uint(id)); err != nil {
+			http.Error(w, "Failed to delete product", http.StatusInternalServerError)
+			return
 		}
+
+		w.WriteHeader(http.StatusNoContent) // 204 No Content is appropriate for a DELETE success response
 	}
 }
 
-func LoginHandler(s *service.UserService) http.HandlerFunc {
+func listProductsHandler(s *service.ProductService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var credentials struct {
-			Email    string `json:"email"`
-			Password string `json:"password"`
+		// Parse optional query parameters
+		query := r.URL.Query().Get("query")
+		sort := r.URL.Query().Get("sort")
+		pageStr := r.URL.Query().Get("page")
+		pageSizeStr := r.URL.Query().Get("pageSize")
+
+		// Set default values for pagination if not specified
+		page, pageSize := 1, 10 // Default values
+		var err error
+		if pageStr != "" {
+			page, err = strconv.Atoi(pageStr)
+			if err != nil {
+				http.Error(w, "Invalid page number", http.StatusBadRequest)
+				return
+			}
 		}
-		if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
-			return
+		if pageSizeStr != "" {
+			pageSize, err = strconv.Atoi(pageSizeStr)
+			if err != nil {
+				http.Error(w, "Invalid page size", http.StatusBadRequest)
+				return
+			}
 		}
 
-		user, err := s.Authenticate(credentials.Email, credentials.Password)
+		var products []model.Product
+		var total int64
+
+		// If a query is provided, use the search method, otherwise list all products
+		if query != "" {
+			products, total, err = s.SearchProducts(query, sort, page, pageSize)
+		} else {
+			products, total, err = s.ListProducts(page, pageSize)
+		}
+
 		if err != nil {
-			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		token, err := s.GenerateJWT(user.ID)
-
-		if err != nil {
-			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
-			return
-		}
-
+		// Prepare and send the response
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"token": token})
+		response := map[string]interface{}{
+			"products": products,
+			"total":    total,
+		}
+		json.NewEncoder(w).Encode(response)
 	}
 }
 
-var jwtKey = []byte("a high stake security key")
-
-func JWTMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "Authorization header required", http.StatusUnauthorized)
+func getProductsByUserIDHandler(s *service.ProductService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		userIDStr := vars["userID"]
+		userID, err := strconv.Atoi(userIDStr)
+		if err != nil {
+			http.Error(w, "Invalid user ID", http.StatusBadRequest)
 			return
 		}
 
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		// Parse optional query parameters for pagination
+		pageStr := r.URL.Query().Get("page")
+		pageSizeStr := r.URL.Query().Get("pageSize")
+		page, pageSize := 1, 10 // Default values
+		if pageStr != "" {
+			page, err = strconv.Atoi(pageStr)
+			if err != nil {
+				http.Error(w, "Invalid page number", http.StatusBadRequest)
+				return
+			}
+		}
+		if pageSizeStr != "" {
+			pageSize, err = strconv.Atoi(pageSizeStr)
+			if err != nil {
+				http.Error(w, "Invalid page size", http.StatusBadRequest)
+				return
+			}
+		}
 
-		claims := &jwt.StandardClaims{}
-		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
-		})
-
-		if err != nil || !token.Valid {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
+		products, total, err := s.GetProductsByUserID(uint(userID), page, pageSize)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		next.ServeHTTP(w, r)
-	})
+		// Prepare and send the response
+		w.Header().Set("Content-Type", "application/json")
+		response := map[string]interface{}{
+			"products": products,
+			"total":    total,
+		}
+		json.NewEncoder(w).Encode(response)
+	}
 }
