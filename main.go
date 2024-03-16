@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/AjaxAueleke/e-commerce/paymentService/internal/model"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/AjaxAueleke/e-commerce/paymentService/api"
 	"github.com/AjaxAueleke/e-commerce/paymentService/internal/service"
@@ -13,14 +15,30 @@ import (
 )
 
 func main() {
-	// Database connection string; adjust as per your MySQL setup
-	dsn := "user:password@tcp(localhost:3306)/paymentservicedb?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	log.Printf("dbUser: %v", dbUser)
+	log.Printf("dbName: %v", dbName)
+	log.Printf("dbPassword: %v", dbPassword)
+	log.Printf("dbHost: %v", dbHost)
+	log.Printf("dbPort: %v", dbPort)
+
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
+	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
+
 	if err != nil {
-		log.Fatalf("Failed to connect to the database: %v", err)
+		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// AutoMigrate the `Payment` model; ensure it's defined and imported
+	rabbitmqConnectionString := os.Getenv("RABBITMQ_URL")
+	log.Printf("RABBIT_MQURL: %v", rabbitmqConnectionString)
+	if err != nil {
+		log.Fatal("Failed to connect to database:", err)
+	}
+
 	db.AutoMigrate(&model.Payment{})
 
 	paymentService := service.NewPaymentService(db)
