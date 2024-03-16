@@ -30,7 +30,6 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 func main() {
-
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
@@ -50,6 +49,7 @@ func main() {
 	}
 
 	rabbitmqConnectionString := os.Getenv("RABBITMQ_URL")
+	log.Printf("RABBIT_MQURL: %v", rabbitmqConnectionString)
 	rabbitMQSvc := service.NewRabbitMQService(rabbitmqConnectionString)
 	productService := service.NewProductService(db)
 
