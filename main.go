@@ -1,11 +1,16 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"github.com/AjaxAueleke/e-commerce/paymentService/internal/model"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/AjaxAueleke/e-commerce/paymentService/api"
 	"github.com/AjaxAueleke/e-commerce/paymentService/internal/service"
@@ -48,8 +53,27 @@ func main() {
 	api.RegisterPaymentRoutes(router, paymentService)
 
 	// Starting the server
-	log.Println("Starting PaymentService on port :9000...")
-	if err := http.ListenAndServe(":9000", router); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+
+	httpServer := &http.Server{
+		Addr:    ":9020",
+		Handler: router,
 	}
+	go func() {
+		log.Println("Order service started on :9020")
+		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("Failed to start HTTP server: %v", err)
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	<-c
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := httpServer.Shutdown(ctx); err != nil {
+		log.Fatalf("HTTP server Shutdown failed: %v", err)
+	}
+	log.Println("Order service shutdown gracefully")
+
 }
