@@ -19,6 +19,18 @@ import (
 	"gorm.io/gorm"
 )
 
+func LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Log the required details
+		start := time.Now()
+		log.Printf("Started %s %s from %s", r.Method, r.RequestURI, r.RemoteAddr)
+
+		next.ServeHTTP(w, r)
+
+		// You can also log the response status and the time taken to serve the request
+		log.Printf("Completed in %v", time.Since(start))
+	})
+}
 func main() {
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
@@ -56,7 +68,7 @@ func main() {
 
 	httpServer := &http.Server{
 		Addr:    ":9020",
-		Handler: router,
+		Handler: LoggingMiddleware(router),
 	}
 	go func() {
 		log.Println("Order service started on :9020")
