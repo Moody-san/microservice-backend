@@ -71,7 +71,7 @@ func main() {
 		Handler: LoggingMiddleware(router),
 	}
 	go func() {
-		log.Println("Order service started on :9020")
+		log.Println("Payment service started on :9020")
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("Failed to start HTTP server: %v", err)
 		}
