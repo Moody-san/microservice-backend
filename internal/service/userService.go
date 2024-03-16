@@ -34,6 +34,14 @@ func (s *UserService) CreateUser(user *model.User) error {
 		return errors.New("email already in use")
 	}
 
+	if user.Role == "Admin" {
+		var adminCount int64
+		s.db.Model(&model.User{}).Where("role = ?", "Admin").Count(&adminCount)
+		if adminCount > 0 {
+			return errors.New("an admin already exists")
+		}
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err

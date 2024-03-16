@@ -21,6 +21,16 @@ func CreateUserHandler(s *service.UserService) http.HandlerFunc {
 			http.Error(w, "Invalid user data", http.StatusBadRequest)
 			return
 		}
+		validRoles := map[string]bool{
+			"Vendor":   true,
+			"Customer": true,
+			"Admin":    true,
+		}
+		if _, isValidRole := validRoles[user.Role]; !isValidRole {
+			log.Printf("Invalid role provided: %v", user.Role)
+			http.Error(w, "Invalid role provided. Valid roles are: Vendor, Customer, Admin", http.StatusBadRequest)
+			return
+		}
 
 		if err := s.CreateUser(&user); err != nil {
 			log.Printf("Error creating user: %v", err)
