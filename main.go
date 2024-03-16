@@ -18,12 +18,16 @@ import (
 )
 
 func main() {
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Can't read environment variables")
 	}
+
 	dsn := "newuser:user_password@tcp(localhost:3306)/productservicedb?charset=utf8mb4&parseTime=True&loc=Local"
+
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
@@ -42,6 +46,7 @@ func main() {
 		Addr:    ":9020",
 		Handler: r,
 	}
+
 	go func() {
 		log.Println("Product service started on :9020")
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -49,7 +54,6 @@ func main() {
 		}
 	}()
 
-	// Graceful shutdown handling
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
@@ -59,6 +63,6 @@ func main() {
 	if err := httpServer.Shutdown(ctx); err != nil {
 		log.Fatalf("HTTP server Shutdown failed: %v", err)
 	}
-	log.Println("Product service shutdown gracefully")
 
+	log.Println("Product service shutdown gracefully")
 }
