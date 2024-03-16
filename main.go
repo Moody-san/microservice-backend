@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/AjaxAueleke/e-commerce/productService/api"
 	"github.com/AjaxAueleke/e-commerce/productService/internal/service"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
@@ -17,6 +17,18 @@ import (
 	"time"
 )
 
+func LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Log the required details
+		start := time.Now()
+		log.Printf("Started %s %s from %s", r.Method, r.RequestURI, r.RemoteAddr)
+
+		next.ServeHTTP(w, r)
+
+		// You can also log the response status and the time taken to serve the request
+		log.Printf("Completed in %v", time.Since(start))
+	})
+}
 func main() {
 
 	dbUser := os.Getenv("DB_USER")
@@ -30,7 +42,6 @@ func main() {
 	log.Printf("dbHost: %v", dbHost)
 	log.Printf("dbPort: %v", dbPort)
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
 	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
 
@@ -43,9 +54,10 @@ func main() {
 	productService := service.NewProductService(db)
 
 	r := mux.NewRouter()
+
 	api.RegisterProductRoutes(r, productService)
 
-	http.Handle("/", r)
+	http.Handle("/", LoggingMiddleware(r))
 	log.Println("Product service started on :9020")
 	go rabbitMQSvc.StartListeningForUserDeleteEvents(productService)
 	httpServer := &http.Server{
