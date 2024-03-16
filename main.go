@@ -28,10 +28,6 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		return
-	}
 
 	rabbitmqConnectionString := os.Getenv("RABBITMQ_URL")
 	dbUser := os.Getenv("DB_USER")
