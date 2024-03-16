@@ -1,5 +1,5 @@
 
-def dir = "user-service"
+def dir = "payment-service"
 def deployments = [
     [branch: 'oracle', dirName: 'manifests-oracle'],
 //     [branch: 'azure', dirName: 'manifests-azure']
