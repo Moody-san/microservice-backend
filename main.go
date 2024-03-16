@@ -1,72 +1,37 @@
 package main
 
 import (
-	"context"
-	"errors"
-	"fmt"
+	"github.com/AjaxAueleke/e-commerce/paymentService/internal/model"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
-	"github.com/AjaxAueleke/e-commerce/orderingService/api"
-	"github.com/AjaxAueleke/e-commerce/orderingService/internal/service"
+	"github.com/AjaxAueleke/e-commerce/paymentService/api"
+	"github.com/AjaxAueleke/e-commerce/paymentService/internal/service"
 	"github.com/gorilla/mux"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 func main() {
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	log.Printf("dbUser: %v", dbUser)
-	log.Printf("dbName: %v", dbName)
-	log.Printf("dbPassword: %v", dbPassword)
-	log.Printf("dbHost: %v", dbHost)
-	log.Printf("dbPort: %v", dbPort)
-
-	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
-	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
-
+	// Database connection string; adjust as per your MySQL setup
+	dsn := "user:password@tcp(localhost:3306)/paymentservicedb?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		log.Fatalf("Failed to connect to the database: %v", err)
 	}
 
-	rabbitmqConnectionString := os.Getenv("RABBITMQ_URL")
-	log.Printf("RABBIT_MQURL: %v", rabbitmqConnectionString)
-	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
-	}
-	orderService := service.NewOrderService(db)
-	r := mux.NewRouter()
-	api.RegisterOrderRoutes(r, orderService)
-	http.Handle("/", r)
-	httpServer := &http.Server{
-		Addr:    ":9020",
-		Handler: r,
-	}
-	go func() {
-		log.Println("Order service started on :9020")
-		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("Failed to start HTTP server: %v", err)
-		}
-	}()
+	// AutoMigrate the `Payment` model; ensure it's defined and imported
+	db.AutoMigrate(&model.Payment{})
 
-	// Graceful shutdown handling
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	<-c
+	paymentService := service.NewPaymentService(db)
+	router := mux.NewRouter()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := httpServer.Shutdown(ctx); err != nil {
-		log.Fatalf("HTTP server Shutdown failed: %v", err)
+	// Register payment routes
+	api.RegisterPaymentRoutes(router, paymentService)
+
+	// Starting the server
+	log.Println("Starting PaymentService on port :9000...")
+	if err := http.ListenAndServe(":9000", router); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
 	}
-	log.Println("Order service shutdown gracefully")
-
 }
